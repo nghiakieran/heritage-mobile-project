@@ -1,5 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Di Tích Lịch Sử</string>
     <string name="default_web_client_id">YOUR_WEB_CLIENT_ID</string>
+    <string name="app_name">Heritage</string>
+    <string name="main_title">Kết nối với quá khứ Việt Nam</string>
+    <string name="main_subtitle">Đắm mình trong những câu chuyện đầy dấu ấn lịch sử của dân tộc ta</string>
+    <string name="explore_monuments">Khám phá di tích</string>
+    <string name="explore_map">Khám phá bản đồ</string>
+    <string name="popular_monuments">Di tích phổ biến</string>
+    <string name="activities">Các hoạt động</string>
+    <string name="register_account">Đăng ký tài khoản</string>
+    <string name="register_desc">Tạo tài khoản để lưu trữ các di tích bạn đã khám phá</string>
+    <string name="search_monuments">Tìm kiếm di tích</string>
+    <string name="search_desc">Khám phá các di tích lịch sử trên khắp Việt Nam</string>
+    <string name="experience">Trải nghiệm thực tế</string>
+    <string name="experience_desc">Tham gia các hoạt động tìm hiểu di tích</string>
+    <string name="share_review">Chia sẻ và Đánh giá</string>
+    <string name="share_desc">Chia sẻ trải nghiệm của bạn về các di tích</string>
 </resources>

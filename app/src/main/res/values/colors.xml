@@ -10,4 +10,6 @@
     <color name="accent">#FF03DAC5</color>
     <color name="google_blue">#4285F4</color>
     <color name="facebook_blue">#1877F2</color>
+    <color name="orange_heritage">#F5A623</color>
+    <color name="background_dark">#1A2A44</color>
 </resources>
