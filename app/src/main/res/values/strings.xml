@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="default_web_client_id">YOUR_WEB_CLIENT_ID</string>
     <string name="app_name">Heritage</string>
     <string name="main_title">Kết nối với quá khứ Việt Nam</string>
     <string name="main_subtitle">Đắm mình trong những câu chuyện đầy dấu ấn lịch sử của dân tộc ta</string>

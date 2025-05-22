@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "1082290218511",
+    "project_id": "heritageproject-2b399",
+    "storage_bucket": "heritageproject-2b399.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1082290218511:android:f14e2d67ee44fcff81257a",
+        "android_client_info": {
+          "package_name": "hcmute.edu.vn.heritageproject"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1082290218511-v8padq0at3l8888g847i8i39bb2mabm7.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "hcmute.edu.vn.heritageproject",
+            "certificate_hash": "0d6e344b6ea84f8f88d1d222e618eaa1b96da238"
+          }
+        },
+        {
+          "client_id": "1082290218511-7tj5g77dvt1f4k4t75mttaraljjr8ih3.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBkoSo3qd3wFdcAAEhI9IiwHrJYuui2dVw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1082290218511-7tj5g77dvt1f4k4t75mttaraljjr8ih3.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
