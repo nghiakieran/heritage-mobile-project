@@ -1,44 +1,66 @@
 package hcmute.edu.vn.heritageproject.views;
 
+import android.content.Intent;
 import android.os.Bundle;
-import androidx.activity.EdgeToEdge;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
+import android.view.MenuItem;
+
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
+import androidx.fragment.app.Fragment;
+
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.firebase.auth.FirebaseAuth;
+
 import hcmute.edu.vn.heritageproject.R;
-import hcmute.edu.vn.heritageproject.models.PopularMonument;
-import hcmute.edu.vn.heritageproject.repository.MonumentRepository;
+import hcmute.edu.vn.heritageproject.views.fragments.HeritageFragment;
+import hcmute.edu.vn.heritageproject.views.fragments.HomeFragment;
+import hcmute.edu.vn.heritageproject.views.fragments.MapFragment;
+import hcmute.edu.vn.heritageproject.views.fragments.ProfileFragment;
 
-import java.util.List;
 public class MainActivity extends AppCompatActivity {
-
-    @Override
+    private FirebaseAuth mAuth;
+    private BottomNavigationView bottomNavigationView;
+        @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
 
-        // Setup Toolbar
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-
-        // Setup RecyclerView for popular monuments
-        RecyclerView recyclerView = findViewById(R.id.recyclerViewPopularMonuments);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-
-        // Load data from repository
-        MonumentRepository repository = new MonumentRepository();
-        List<PopularMonument> monuments = repository.getPopularMonuments();
-        PopularMonumentAdapter adapter = new PopularMonumentAdapter(monuments);
-        recyclerView.setAdapter(adapter);
+        // Initialize Firebase Auth
+        mAuth = FirebaseAuth.getInstance();
+        
+        // Setup Bottom Navigation
+        bottomNavigationView = findViewById(R.id.bottomNavigation);
+        bottomNavigationView.setOnItemSelectedListener(this::onNavigationItemSelected);
+        
+        // Set default fragment
+        if (savedInstanceState == null) {
+            loadFragment(new HomeFragment());
+            bottomNavigationView.setSelectedItemId(R.id.navigation_home);
+        }
+    }private boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        Fragment fragment = null;
+        
+        int itemId = item.getItemId();
+        if (itemId == R.id.navigation_home) {
+            fragment = new HomeFragment();
+        } else if (itemId == R.id.navigation_heritage) {
+            fragment = new HeritageFragment();
+        } else if (itemId == R.id.navigation_map) {
+            fragment = new MapFragment();
+        } else if (itemId == R.id.navigation_profile) {
+            fragment = new ProfileFragment();
+        }
+        
+        return loadFragment(fragment);
+    }
+      private boolean loadFragment(Fragment fragment) {
+        if (fragment != null) {
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.fragmentContainer, fragment)
+                    .commit();
+            return true;
+        }
+        return false;
     }
 }

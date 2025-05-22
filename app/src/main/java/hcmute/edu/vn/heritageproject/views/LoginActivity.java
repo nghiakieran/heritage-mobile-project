@@ -81,7 +81,15 @@ public class LoginActivity extends AppCompatActivity {
                 });
 
         setupClickListeners();
-        checkCurrentUser();
+        
+        // Kiểm tra nếu activity được khởi chạy từ màn hình chính
+        if (getIntent().getBooleanExtra("fromMainActivity", false)) {
+            // Không tự động chuyển đến MainActivity nếu được mở từ MainActivity
+            // để người dùng có thể đăng nhập lại
+        } else {
+            // Kiểm tra người dùng đã đăng nhập chưa
+            checkCurrentUser();
+        }
     }
 
     private void checkCurrentUser() {
@@ -117,6 +125,7 @@ public class LoginActivity extends AppCompatActivity {
 
     private void startMainActivity() {
         Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP); // Xóa activity stack
         startActivity(intent);
         finish();
     }

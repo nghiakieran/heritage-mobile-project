@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Sample Image Drawables -->
+    <item name="banner_hue" type="drawable">@color/primary</item>
+    <item name="banner_hoian" type="drawable">@color/orange_heritage</item>
+    <item name="banner_thanhnhaho" type="drawable">@color/primary_dark</item>
+    
+    <item name="event_den_hung" type="drawable">@color/primary</item>
+    <item name="event_hue" type="drawable">@color/orange_heritage</item>
+    <item name="event_hoian" type="drawable">@color/primary_dark</item>
+
+</resources>
