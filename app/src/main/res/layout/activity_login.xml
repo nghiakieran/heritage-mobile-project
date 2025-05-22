@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto" android:layout_width="match_parent" android:layout_height="match_parent" android:background="@color/white">
+
+    <com.airbnb.lottie.LottieAnimationView android:id="@+id/animationView" android:layout_width="300dp" android:layout_height="300dp" android:layout_marginTop="48dp" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintStart_toStartOf="parent" app:layout_constraintTop_toTopOf="parent" app:lottie_autoPlay="true" app:lottie_loop="true" app:lottie_rawRes="@raw/heritage_animation" />
+
+    <TextView android:id="@+id/titleTextView" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="24dp" android:text="Di Tích Lịch Sử" android:textColor="@color/primary" android:textSize="28sp" android:textStyle="bold" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintStart_toStartOf="parent" app:layout_constraintTop_toBottomOf="@id/animationView" />
+
+    <TextView android:id="@+id/subtitleTextView" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="Khám phá văn hóa Việt Nam" android:textColor="@color/secondary" android:textSize="16sp" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintStart_toStartOf="parent" app:layout_constraintTop_toBottomOf="@id/titleTextView" />
+
+    <com.google.android.material.card.MaterialCardView android:id="@+id/googleSignInCard" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginHorizontal="32dp" android:layout_marginBottom="32dp" app:cardCornerRadius="12dp" app:cardElevation="4dp" app:layout_constraintBottom_toBottomOf="parent">
+
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center" android:orientation="horizontal" android:padding="16dp">
+
+            <ImageView android:layout_width="24dp" android:layout_height="24dp" android:src="@drawable/ic_google" app:tint="@color/primary" />
+
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginStart="12dp" android:text="Đăng nhập bằng Google" android:textColor="@color/primary" android:textSize="16sp" android:textStyle="bold" />
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
