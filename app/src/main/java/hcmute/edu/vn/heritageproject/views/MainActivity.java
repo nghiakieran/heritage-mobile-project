@@ -1,4 +1,4 @@
-package hcmute.edu.vn.heritageproject.controllers;
+package hcmute.edu.vn.heritageproject.views;
 
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
@@ -8,7 +8,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import hcmute.edu.vn.heritageproject.R;
 import hcmute.edu.vn.heritageproject.models.PopularMonument;
 import hcmute.edu.vn.heritageproject.repository.MonumentRepository;
-import hcmute.edu.vn.heritageproject.views.PopularMonumentAdapter;
+
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
