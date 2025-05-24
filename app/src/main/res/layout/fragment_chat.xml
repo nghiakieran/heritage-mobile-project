@@ -1,31 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context=".views.fragments.ChatFragment">
-
-    <ScrollView
+    tools:context=".views.fragments.ChatFragment">    <androidx.core.widget.NestedScrollView
         android:id="@+id/scrollView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1">
-
-        <LinearLayout
+        android:layout_weight="1"
+        android:fillViewport="true"
+        android:scrollbars="vertical"
+        android:scrollbarThumbVertical="@android:color/darker_gray"
+        android:scrollbarStyle="outsideOverlay"
+        android:overScrollMode="ifContentScrolls">        <LinearLayout
             android:id="@+id/chatLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="16dp" />
-    </ScrollView>
-
-    <LinearLayout
+            android:padding="16dp"
+            android:paddingBottom="24dp"
+            android:clipToPadding="false" />
+    </androidx.core.widget.NestedScrollView><LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:padding="8dp"
-        android:background="#F5F5F5">
+        android:padding="12dp"
+        android:gravity="center_vertical"
+        android:elevation="8dp"
+        android:background="#F8F8F8">
 
         <EditText
             android:id="@+id/inputText"
@@ -33,17 +37,28 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:hint="Nhập câu hỏi về di tích lịch sử..."
-            android:inputType="text"
-            android:padding="12dp"
+            android:inputType="textMultiLine"
+            android:minLines="1"
+            android:maxLines="4"
+            android:padding="14dp"
+            android:textSize="15sp"
             android:background="@drawable/edittext_background" />
 
-        <Button
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/sendBtn"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
             android:layout_marginStart="8dp"
-            android:text="Gửi"
-            android:textColor="#FFFFFF"
+            android:insetLeft="0dp"
+            android:insetTop="0dp"
+            android:insetRight="0dp"
+            android:insetBottom="0dp"
+            app:cornerRadius="25dp"
+            app:iconGravity="textStart"
+            app:icon="@android:drawable/ic_menu_send"
+            app:iconTint="#FFFFFF"
+            app:iconPadding="0dp"
+            android:contentDescription="Gửi"
             android:backgroundTint="@color/primary" />
     </LinearLayout>
 </LinearLayout>
