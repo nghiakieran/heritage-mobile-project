@@ -3,7 +3,6 @@ package hcmute.edu.vn.heritageproject.views.adapters;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -37,7 +36,6 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
         holder.eventDate.setText(event.getDate());
         holder.eventLocation.setText(event.getLocation());
         holder.eventDescription.setText(event.getDescription());
-        holder.eventImage.setImageResource(event.getImageResId());
     }
 
     @Override
@@ -46,7 +44,6 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
     }
 
     static class EventViewHolder extends RecyclerView.ViewHolder {
-        ImageView eventImage;
         TextView eventName;
         TextView eventDate;
         TextView eventLocation;
@@ -54,7 +51,6 @@ public class EventAdapter extends RecyclerView.Adapter<EventAdapter.EventViewHol
 
         EventViewHolder(View itemView) {
             super(itemView);
-            eventImage = itemView.findViewById(R.id.eventImage);
             eventName = itemView.findViewById(R.id.eventName);
             eventDate = itemView.findViewById(R.id.eventDate);
             eventLocation = itemView.findViewById(R.id.eventLocation);
