@@ -15,4 +15,6 @@
     <string name="experience_desc">Tham gia các hoạt động tìm hiểu di tích</string>
     <string name="share_review">Chia sẻ và Đánh giá</string>
     <string name="share_desc">Chia sẻ trải nghiệm của bạn về các di tích</string>
+    <string name="search_hint">Tìm kiếm vị trí...</string>
+    <string name="empty_map_message">Bản đồ di tích sẽ được hiển thị ở đây</string>
 </resources>
