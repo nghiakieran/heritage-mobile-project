@@ -2,15 +2,16 @@ package hcmute.edu.vn.heritageproject.views.fragments;
 
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
-import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
+import androidx.core.widget.NestedScrollView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -33,11 +34,10 @@ import okhttp3.Response;
 
 public class ChatFragment extends Fragment {
     private static final String TAG = "ChatFragment";
-    
-    private EditText inputText;
+      private EditText inputText;
     private Button sendBtn;
     private LinearLayout chatLayout;
-    private ScrollView scrollView;
+    private NestedScrollView scrollView;
     private OkHttpClient client;
     private ChatService chatService;
 
@@ -177,51 +177,149 @@ public class ChatFragment extends Fragment {
         }
         
         return count;
-    }
-    
-    private void showTypingIndicator() {
+    }    private void showTypingIndicator() {
         if (getActivity() == null) return;
         
         getActivity().runOnUiThread(() -> {
+            // Tạo container cho indicator
+            LinearLayout indicatorContainer = new LinearLayout(getContext());
+            indicatorContainer.setOrientation(LinearLayout.VERTICAL);
+            indicatorContainer.setId(R.id.typing_indicator);
+            
             TextView typingIndicator = new TextView(getContext());
-            typingIndicator.setId(R.id.typing_indicator);
             typingIndicator.setText("Heritage Assistant đang nhập...");
             typingIndicator.setPadding(16, 16, 16, 16);
-            chatLayout.addView(typingIndicator);
+            typingIndicator.setTextColor(0xFF757575); // Màu chữ xám
+            typingIndicator.setBackgroundResource(R.drawable.bot_message_background);
+            
+            // Thiết lập animation hiệu ứng nhấp nháy (có thể thêm sau)
+            
+            // Thiết lập layout params cho container
+            LinearLayout.LayoutParams containerParams = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT);
+            
+            // Thêm margins
+            int marginBottomInDp = 16;
+            int marginTopInDp = 4;
+            int marginLeftInDp = 8;
+            
+            int pxToBottom = (int) (marginBottomInDp * getResources().getDisplayMetrics().density);
+            int pxToTop = (int) (marginTopInDp * getResources().getDisplayMetrics().density);
+            int pxToLeft = (int) (marginLeftInDp * getResources().getDisplayMetrics().density);
+            
+            containerParams.bottomMargin = pxToBottom;
+            containerParams.topMargin = pxToTop;
+            containerParams.leftMargin = pxToLeft;
+            containerParams.gravity = Gravity.START;
+            containerParams.rightMargin = (int) (getResources().getDisplayMetrics().widthPixels * 0.4); // Giới hạn chiều rộng
+            
+            // Thêm TextView vào container
+            indicatorContainer.addView(typingIndicator);
+            
+            // Set layout params cho container
+            indicatorContainer.setLayoutParams(containerParams);
+            
+            // Thêm shadow nếu hỗ trợ
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+                typingIndicator.setElevation(1f);
+            }
+            
+            chatLayout.addView(indicatorContainer);
             scrollToBottom();
         });
     }
-    
-    private void removeTypingIndicator() {
+      private void removeTypingIndicator() {
         if (getActivity() == null) return;
         
         getActivity().runOnUiThread(() -> {
             View indicator = chatLayout.findViewById(R.id.typing_indicator);
             if (indicator != null) {
-                chatLayout.removeView(indicator);
+                // Add fade out animation (optional)
+                indicator.animate()
+                    .alpha(0f)
+                    .setDuration(150)
+                    .withEndAction(() -> chatLayout.removeView(indicator))
+                    .start();
             }
         });
-    }
-
-    private void addMessage(String msg) {
+    }private void addMessage(String msg) {
+        // Tạo container cho tin nhắn để thêm shadow và styling
+        LinearLayout messageContainer = new LinearLayout(getContext());
+        messageContainer.setOrientation(LinearLayout.VERTICAL);
+        
         TextView tv = new TextView(getContext());
         tv.setText(msg);
         tv.setPadding(16, 16, 16, 16);
         
+        // Thiết lập margin để tạo khoảng cách giữa các tin nhắn
+        LinearLayout.LayoutParams containerParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT);
+        
+        // Thêm margin phía dưới mỗi tin nhắn (đơn vị dp)
+        int marginBottomInDp = 16;
+        int marginTopInDp = 4;
+        int horizontalMarginInDp = 8;
+        int pxToBottom = (int) (marginBottomInDp * getResources().getDisplayMetrics().density);
+        int pxToTop = (int) (marginTopInDp * getResources().getDisplayMetrics().density);
+        int pxToSide = (int) (horizontalMarginInDp * getResources().getDisplayMetrics().density);
+        
+        containerParams.bottomMargin = pxToBottom;
+        containerParams.topMargin = pxToTop;
         
         // Phân biệt tin nhắn người dùng và tin nhắn bot
         if (msg.startsWith("Bạn: ")) {
             tv.setBackgroundResource(R.drawable.user_message_background);
+            tv.setTextColor(0xFF000000); // Màu chữ đen
+            
+            // Đẩy tin nhắn của người dùng về bên phải
+            containerParams.gravity = Gravity.END;
+            containerParams.rightMargin = pxToSide;
+            containerParams.leftMargin = (int) (getResources().getDisplayMetrics().widthPixels * 0.15); // Giới hạn chiều rộng
+            
+            // Thêm shadow cho tin nhắn người dùng (Android 5.0+)
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+                tv.setElevation(2f); 
+            }
         } else {
             tv.setBackgroundResource(R.drawable.bot_message_background);
+            tv.setTextColor(0xFF000000); // Màu chữ đen
+            
+            // Đẩy tin nhắn của bot về bên trái
+            containerParams.gravity = Gravity.START;
+            containerParams.leftMargin = pxToSide;
+            containerParams.rightMargin = (int) (getResources().getDisplayMetrics().widthPixels * 0.15); // Giới hạn chiều rộng
+            
+            // Thêm shadow cho tin nhắn bot (Android 5.0+)
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+                tv.setElevation(1f);
+            }
         }
         
-        chatLayout.addView(tv);
+        // Thêm TextView vào container
+        messageContainer.addView(tv);
+        
+        // Set layout params cho container
+        messageContainer.setLayoutParams(containerParams);
+        
+        // Thêm message container vào chat layout
+        chatLayout.addView(messageContainer);
         scrollToBottom();
     }
-    
-    private void scrollToBottom() {
-        scrollView.post(() -> scrollView.fullScroll(View.FOCUS_DOWN));
+      private void scrollToBottom() {
+        scrollView.post(() -> {
+            // Đối với NestedScrollView, fullScroll vẫn hoạt động
+            scrollView.fullScroll(View.FOCUS_DOWN);
+            
+            // Thêm smooth scroll animation
+            if (chatLayout.getChildCount() > 0) {
+                View lastChild = chatLayout.getChildAt(chatLayout.getChildCount() - 1);
+                if (lastChild != null) {
+                    lastChild.requestFocus();
+                }
+            }
+        });
     }
       /**
      * Check API availability and notify user if in offline mode
