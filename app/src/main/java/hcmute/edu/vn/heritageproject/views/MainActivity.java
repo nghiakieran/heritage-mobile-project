@@ -12,6 +12,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 
 import hcmute.edu.vn.heritageproject.R;
+import hcmute.edu.vn.heritageproject.views.fragments.ChatFragment;
 import hcmute.edu.vn.heritageproject.views.fragments.HeritageFragment;
 import hcmute.edu.vn.heritageproject.views.fragments.HomeFragment;
 import hcmute.edu.vn.heritageproject.views.fragments.MapFragment;
@@ -37,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
             loadFragment(new HomeFragment());
             bottomNavigationView.setSelectedItemId(R.id.navigation_home);
         }
-    }private boolean onNavigationItemSelected(@NonNull MenuItem item) {
+    }    private boolean onNavigationItemSelected(@NonNull MenuItem item) {
         Fragment fragment = null;
         
         int itemId = item.getItemId();
@@ -47,6 +48,8 @@ public class MainActivity extends AppCompatActivity {
             fragment = new HeritageFragment();
         } else if (itemId == R.id.navigation_map) {
             fragment = new MapFragment();
+        } else if (itemId == R.id.navigation_chat) {
+            fragment = new ChatFragment();
         } else if (itemId == R.id.navigation_profile) {
             fragment = new ProfileFragment();
         }
