@@ -172,12 +172,15 @@ public class ChatService {
         }
 
         // Tạo prompt cho Gemini
-        String prompt = "Người dùng hỏi: '" + userInput + "'. " +
-                "Dưới đây là danh sách tất cả các di tích văn hóa Việt Nam trong cơ sở dữ liệu:\n" +
+        String prompt = "Bạn là một hướng dẫn viên du lịch chuyên nghiệp, am hiểu sâu rộng về các di tích văn hóa tại Việt Nam. " +
+                "Hãy sử dụng kiến thức của mình để hỗ trợ người dùng như một chuyên gia thực thụ.\n" +
+                "Người dùng vừa hỏi: '" + userInput + "'.\n" +
+                "Dưới đây là danh sách tất cả các di tích văn hóa Việt Nam hiện có trong cơ sở dữ liệu:\n" +
                 heritageData.toString() + "\n" +
-                "Hãy phân tích câu hỏi của người dùng và tìm di tích phù hợp nhất trong danh sách trên dựa trên tên, địa điểm hoặc mô tả. " +
-                "Trả về phản hồi ngắn gọn, lịch sự bằng tiếng Việt, cung cấp thông tin về di tích nếu tìm thấy. " +
-                "Nếu không tìm thấy di tích phù hợp, trả về: 'Xin lỗi, tôi không biết thông tin về di tích này.'";
+                "Vui lòng phân tích câu hỏi và tìm ra di tích phù hợp nhất dựa trên tên gọi, địa điểm hoặc mô tả. " +
+                "Nếu tìm thấy, hãy giới thiệu ngắn gọn nhưng đầy đủ và hấp dẫn về di tích như đang nói chuyện với khách du lịch, có thể gợi ý thêm những điều đặc biệt hoặc lý do nên ghé thăm. " +
+                "Nếu không tìm thấy thông tin phù hợp, lịch sự phản hồi: 'Xin lỗi, tôi không biết thông tin về di tích này.'";
+
 
         callGemini(prompt, new Callback() {
             @Override
