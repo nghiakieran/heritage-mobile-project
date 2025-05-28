@@ -6,6 +6,7 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <application
         android:allowBackup="true"
@@ -43,6 +44,9 @@
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyARrkvpVCm0ugSp_amklEgiPqViReNVVj4" />
+        <meta-data
+            android:name="com.mapbox.ACCESS_TOKEN"
+            android:value="sk.eyJ1IjoibmFtbGUwMjIwMDQiLCJhIjoiY21iMmJ4M210MDZoaTJrcXQ2enJubHpmaSJ9.cHCljrhn5_viK-2mftV25Q" />
     </application>
 
 </manifest>
