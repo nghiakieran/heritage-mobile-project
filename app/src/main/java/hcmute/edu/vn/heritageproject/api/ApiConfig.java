@@ -22,9 +22,9 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 public class ApiConfig {    // URL API - Cập nhật theo API thực tế
-    private static final String PRODUCTION_BASE_URL = "http://192.168.1.x:8017/v1/"; // Thay "192.168.1.x" bằng IP thực của máy chủ
-    private static final String EMULATOR_BASE_URL = "http://192.168.1.108:8017/v1/"; // 10.0.2.2 trỏ đến localhost máy host từ emulator
-    private static final String DEVICE_DEBUG_URL = "http://192.168.1.108:8017/v1/"; // URL cho thiết bị thật trong mạng LAN
+    private static final String PRODUCTION_BASE_URL = "http://localhost:8017/v1/"; // Thay "192.168.1.x" bằng IP thực của máy chủ
+    private static final String EMULATOR_BASE_URL = "http://192.168.1.68:8017/v1/"; // 10.0.2.2 trỏ đến localhost máy host từ emulator
+    private static final String DEVICE_DEBUG_URL = "http://192.168.1.68:8017/v1/"; // URL cho thiết bị thật trong mạng LAN
     
     public static String getBaseUrl() {
         if (isEmulator()) {
