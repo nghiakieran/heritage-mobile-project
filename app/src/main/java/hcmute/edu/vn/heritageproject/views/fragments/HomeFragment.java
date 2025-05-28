@@ -132,7 +132,8 @@ public class HomeFragment extends Fragment {
                 }
             }
         });
-    }    private void loadPopularHeritages() {
+    }
+    private void loadPopularHeritages() {
         // Get random heritages
         heritageRepository.getRandomHeritages(new HeritageRepository.HeritageCallback() {
             @Override

@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout 
+<androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- Header with Search Bar -->
+    <!-- Search Bar -->
     <androidx.cardview.widget.CardView
         android:id="@+id/searchBarCard"
         android:layout_width="0dp"
@@ -14,33 +14,33 @@
         android:layout_marginTop="16dp"
         app:cardCornerRadius="28dp"
         app:cardElevation="4dp"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintEnd_toEndOf="parent">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:gravity="center_vertical"
             android:orientation="horizontal"
+            android:gravity="center_vertical"
             android:paddingHorizontal="16dp">
 
             <ImageView
                 android:layout_width="24dp"
                 android:layout_height="24dp"
-                android:contentDescription="Search icon"
-                android:src="@drawable/ic_search1" />
+                android:src="@drawable/ic_search1"
+                android:contentDescription="Search icon" />
 
             <EditText
                 android:id="@+id/searchEditText"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_marginStart="8dp"
                 android:layout_weight="1"
-                android:background="@android:color/transparent"
+                android:layout_marginStart="8dp"
                 android:hint="Tìm kiếm di tích..."
-                android:imeOptions="actionSearch"
+                android:background="@android:color/transparent"
                 android:inputType="text"
+                android:imeOptions="actionSearch"
                 android:paddingVertical="8dp" />
 
             <ImageView
@@ -48,29 +48,57 @@
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:layout_marginStart="8dp"
-                android:contentDescription="Filter"
-                android:src="@drawable/ic_filter" />
+                android:src="@drawable/ic_filter"
+                android:contentDescription="Filter icon" />
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 
-    <!-- Empty Content Message -->
+    <!-- ProgressBar -->
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@id/searchBarCard"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+    <!-- RecyclerView -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerViewHeritages"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="8dp"
+        android:paddingHorizontal="16dp"
+        android:clipToPadding="false"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@id/searchBarCard"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+    <!-- Empty State Layout -->
     <LinearLayout
+        android:id="@+id/emptyContentLayout"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:gravity="center"
         android:orientation="vertical"
+        android:gravity="center"
         android:padding="16dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/searchBarCard">
+        android:visibility="visible"
+        app:layout_constraintTop_toBottomOf="@id/searchBarCard"
+        app:layout_constraintBottom_toBottomOf="parent">
 
         <ImageView
             android:layout_width="120dp"
             android:layout_height="120dp"
             android:src="@drawable/ic_heritage"
             android:alpha="0.5"
-            android:contentDescription="Empty heritage list" />
+            android:contentDescription="Empty list icon" />
 
         <TextView
+            android:id="@+id/emptyTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
@@ -78,7 +106,5 @@
             android:textAlignment="center"
             android:textColor="@color/gray"
             android:textSize="16sp" />
-
     </LinearLayout>
-
 </androidx.constraintlayout.widget.ConstraintLayout>
