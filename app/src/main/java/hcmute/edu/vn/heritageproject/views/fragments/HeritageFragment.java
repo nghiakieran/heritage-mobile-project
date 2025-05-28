@@ -85,9 +85,16 @@ public class HeritageFragment extends Fragment {
         if (apiService == null) {
             Toast.makeText(getContext(), "Lỗi khởi tạo API service", Toast.LENGTH_SHORT).show();
             return;
+        }        showEmptyState("Đang tải dữ liệu...");
+        
+        // Kiểm tra xem có từ khóa tìm kiếm được truyền từ HomeFragment không
+        Bundle args = getArguments();
+        if (args != null && args.containsKey("SEARCH_QUERY")) {
+            String searchQuery = args.getString("SEARCH_QUERY");
+            searchEditText.setText(searchQuery);
+            // Khi đặt text, TextWatcher sẽ tự động kích hoạt tìm kiếm
         }
-
-        showEmptyState("Đang tải dữ liệu...");
+        
         loadAllHeritages();
 
         searchEditText.addTextChangedListener(new TextWatcher() {

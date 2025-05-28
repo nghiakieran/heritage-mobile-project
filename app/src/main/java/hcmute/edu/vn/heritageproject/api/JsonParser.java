@@ -58,15 +58,21 @@ public class JsonParser {
                 heritageNamesList.add(heritageName);
             }
 
-            response.setHeritageNames(heritageNamesList);
-        } else {
+            response.setHeritageNames(heritageNamesList);        } else {
             // Trường hợp JSON không có "heritages", thử parse trực tiếp
             Log.w(TAG, "No 'heritages' field found, attempting to parse directly...");
             try {
-                Heritage heritage = parseHeritage(jsonObject);
-                List<Heritage> heritageList = new ArrayList<>();
-                heritageList.add(heritage);
-                response.setHeritages(heritageList);
+                // Kiểm tra xem JSON có phải là đối tượng di tích không
+                if (jsonObject.has("_id") && jsonObject.has("name")) {
+                    Heritage heritage = parseHeritage(jsonObject);
+                    List<Heritage> heritageList = new ArrayList<>();
+                    heritageList.add(heritage);
+                    response.setHeritages(heritageList);
+                    response.setSuccess(true);
+                    Log.d(TAG, "Successfully parsed single heritage object directly");
+                } else {
+                    throw new JSONException("JSON does not contain expected heritage fields");
+                }
             } catch (Exception e) {
                 Log.e(TAG, "Failed to parse directly: " + e.getMessage());
                 response.setHeritages(new ArrayList<>());
@@ -93,12 +99,17 @@ public class JsonParser {
         }
 
         return response;
-    }
-
-    private static Heritage parseHeritage(JSONObject jsonObject) throws JSONException {
+    }    private static Heritage parseHeritage(JSONObject jsonObject) throws JSONException {
         Heritage heritage = new Heritage();
 
-        heritage.setId(jsonObject.optString("_id", jsonObject.optString("id", "")));
+        // Xử lý ID phù hợp với đặc điểm API
+        String id = jsonObject.optString("_id", "");
+        if (id.isEmpty()) {
+            id = jsonObject.optString("id", "");
+        }
+        Log.d(TAG, "Parsed heritage ID: " + id);
+        heritage.setId(id);
+        
         heritage.setName(jsonObject.optString("name", ""));
         heritage.setNameSlug(jsonObject.optString("nameSlug", ""));
         heritage.setDescription(jsonObject.optString("description", ""));
