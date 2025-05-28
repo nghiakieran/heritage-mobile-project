@@ -202,4 +202,26 @@ public class Heritage {
     
     public double getDistance() { return distance; }
     public void setDistance(double distance) { this.distance = distance; }
+
+    public Double getLatitude() {
+        if (coordinates != null && coordinates.getLatitude() != null) {
+            try {
+                return Double.parseDouble(coordinates.getLatitude());
+            } catch (NumberFormatException e) {
+                return null;
+            }
+        }
+        return null;
+    }
+
+    public Double getLongitude() {
+        if (coordinates != null && coordinates.getLongitude() != null) {
+            try {
+                return Double.parseDouble(coordinates.getLongitude());
+            } catch (NumberFormatException e) {
+                return null;
+            }
+        }
+        return null;
+    }
 }
