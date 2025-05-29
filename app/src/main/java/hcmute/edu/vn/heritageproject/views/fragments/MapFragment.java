@@ -67,6 +67,7 @@ public class MapFragment extends Fragment {
     private boolean isFullScreen = false;
     private AutoCompleteTextView searchEditText;
     private final Handler searchHandler = new Handler(Looper.getMainLooper());
+    private final Handler mainHandler = new Handler(Looper.getMainLooper());
     private static final long SEARCH_DELAY_MS = 500; // 0.5 giây delay
     private Runnable searchRunnable;
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 100;
@@ -86,9 +87,11 @@ public class MapFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Khởi tạo OSMDroid
-        Context ctx = requireActivity().getApplicationContext();
-        Configuration.getInstance().load(ctx, PreferenceManager.getDefaultSharedPreferences(ctx));
-        Configuration.getInstance().setUserAgentValue(requireActivity().getPackageName());
+        Context ctx = getContext();
+        if (ctx != null) {
+            Configuration.getInstance().load(ctx, PreferenceManager.getDefaultSharedPreferences(ctx));
+            Configuration.getInstance().setUserAgentValue(ctx.getPackageName());
+        }
 
         rootView = inflater.inflate(R.layout.fragment_map, container, false);
 
@@ -99,23 +102,33 @@ public class MapFragment extends Fragment {
         requestLocationPermissions();
 
         return rootView;
-    }    private void initializeViews() {
+    }
+
+    private void initializeViews() {
         // Khởi tạo HeritageApiService
         heritageApiService = HeritageApiService.getInstance();
-        
+
         mapView = rootView.findViewById(R.id.mapView);
         fullScreenButton = rootView.findViewById(R.id.fullScreenButton);
         searchEditText = rootView.findViewById(R.id.searchEditText);
         messageText = rootView.findViewById(R.id.messageText);
-        myLocationButton = rootView.findViewById(R.id.myLocationButton);        // Initialize RecyclerView for nearby heritages
+        myLocationButton = rootView.findViewById(R.id.myLocationButton);
+
+        // Initialize RecyclerView for nearby heritages
         recyclerViewNearbyHeritages = rootView.findViewById(R.id.recyclerViewNearbyHeritages);
-        recyclerViewNearbyHeritages.setLayoutManager(
-            new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
+        if (getContext() != null) {
+            recyclerViewNearbyHeritages.setLayoutManager(
+                    new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
+        }
         nearbyHeritagesAdapter = new HeritageAdapter(nearbyHeritages);
         recyclerViewNearbyHeritages.setAdapter(nearbyHeritagesAdapter);
 
         // Set click listener for heritage items
         nearbyHeritagesAdapter.setOnHeritageClickListener(heritage -> {
+            if (!isAdded() || getActivity() == null) {
+                return;
+            }
+
             // Di chuyển map đến vị trí di tích được chọn
             if (heritage.getLatitude() != null && heritage.getLongitude() != null) {
                 GeoPoint heritagePoint = new GeoPoint(heritage.getLatitude(), heritage.getLongitude());
@@ -127,33 +140,39 @@ public class MapFragment extends Fragment {
             intent.putExtra("heritageId", heritage.getId());
             startActivity(intent);
         });
-    }    private void initializeMap() {
+    }
+
+    private void initializeMap() {
+        if (!isAdded() || getContext() == null) {
+            return;
+        }
+
         mapView.setTileSource(TileSourceFactory.MAPNIK);
         mapView.getController().setZoom(12.0);
-        
+
         // Tắt các nút zoom mặc định
         mapView.getZoomController().setVisibility(CustomZoomButtonsController.Visibility.NEVER);
-        
+
         // Bật đa chạm để zoom
         mapView.setMultiTouchControls(true);
-        
+
         // Set vị trí mặc định (Ho Chi Minh City)
         GeoPoint startPoint = new GeoPoint(10.8231, 106.6297);
         mapView.getController().setCenter(startPoint);
-        
+
         // Thêm marker mặc định và tải di tích gần đó
         addMarker(startPoint, "Hồ Chí Minh");
         loadNearbyHeritages(10.8231, 106.6297);
 
         // Thêm tap listener
-        Overlay touchOverlay = new Overlay(requireContext()) {
+        Overlay touchOverlay = new Overlay(getContext()) {
             @Override
             public boolean onSingleTapConfirmed(android.view.MotionEvent e, MapView mapView) {
                 android.graphics.Point screenPoint = new android.graphics.Point();
                 screenPoint.x = (int) e.getX();
                 screenPoint.y = (int) e.getY();
-                  GeoPoint geoPoint = (GeoPoint) mapView.getProjection().fromPixels(screenPoint.x, screenPoint.y);
-                
+                GeoPoint geoPoint = (GeoPoint) mapView.getProjection().fromPixels(screenPoint.x, screenPoint.y);
+
                 // Xóa tất cả markers
                 clearAllMarkers();
 
@@ -161,44 +180,63 @@ public class MapFragment extends Fragment {
                 addMarker(geoPoint, "Vị trí đã chọn");
 
                 // Tìm các di tích gần điểm được chọn
-                heritageApiService.getNearestHeritages(
-                    geoPoint.getLatitude(),
-                    geoPoint.getLongitude(),
-                    DEFAULT_NEARBY_LIMIT,
-                    new HeritageApiService.ApiCallback<HeritageResponse>() {
-                        @Override
-                        public void onSuccess(HeritageResponse result) {
-                            requireActivity().runOnUiThread(() -> {
-                                if (result != null && result.getHeritages() != null) {
-                                    nearbyHeritages.clear();
-                                    nearbyHeritages.addAll(result.getHeritages());
-                                    nearbyHeritagesAdapter.notifyDataSetChanged();
-                                    
-                                    // Thêm marker cho mỗi di tích tìm thấy
-                                    for (Heritage heritage : result.getHeritages()) {
-                                        if (heritage.getLatitude() != null && heritage.getLongitude() != null) {
-                                            GeoPoint heritagePoint = new GeoPoint(
-                                                heritage.getLatitude(),
-                                                heritage.getLongitude()
-                                            );
-                                            addMarker(heritagePoint, heritage.getName());
-                                        }
+                if (heritageApiService != null) {
+                    heritageApiService.getNearestHeritages(
+                            geoPoint.getLatitude(),
+                            geoPoint.getLongitude(),
+                            DEFAULT_NEARBY_LIMIT,
+                            new HeritageApiService.ApiCallback<HeritageResponse>() {
+                                @Override
+                                public void onSuccess(HeritageResponse result) {
+                                    // FIX: Check if Fragment is still attached
+                                    if (!isAdded() || getActivity() == null) {
+                                        return;
                                     }
-                                    
-                                    showMessage(String.format("Tìm thấy %d di tích gần đây", result.getHeritages().size()));
-                                } else {
-                                    showMessage("Không tìm thấy di tích nào gần đây");
+
+                                    mainHandler.post(() -> {
+                                        if (!isAdded() || getActivity() == null) {
+                                            return;
+                                        }
+
+                                        if (result != null && result.getHeritages() != null) {
+                                            nearbyHeritages.clear();
+                                            nearbyHeritages.addAll(result.getHeritages());
+                                            nearbyHeritagesAdapter.notifyDataSetChanged();
+
+                                            // Thêm marker cho mỗi di tích tìm thấy
+                                            for (Heritage heritage : result.getHeritages()) {
+                                                if (heritage.getLatitude() != null && heritage.getLongitude() != null) {
+                                                    GeoPoint heritagePoint = new GeoPoint(
+                                                            heritage.getLatitude(),
+                                                            heritage.getLongitude()
+                                                    );
+                                                    addMarker(heritagePoint, heritage.getName());
+                                                }
+                                            }
+
+                                            showMessage(String.format("Tìm thấy %d di tích gần đây", result.getHeritages().size()));
+                                        } else {
+                                            showMessage("Không tìm thấy di tích nào gần đây");
+                                        }
+                                    });
+                                }
+
+                                @Override
+                                public void onError(Exception e) {
+                                    // FIX: Check if Fragment is still attached
+                                    if (!isAdded() || getActivity() == null) {
+                                        return;
+                                    }
+
+                                    mainHandler.post(() -> {
+                                        if (!isAdded() || getActivity() == null) {
+                                            return;
+                                        }
+                                        showMessage("Lỗi khi tìm di tích: " + e.getMessage());
+                                    });
                                 }
                             });
-                        }
-
-                        @Override
-                        public void onError(Exception e) {
-                            requireActivity().runOnUiThread(() -> 
-                                showMessage("Lỗi khi tìm di tích: " + e.getMessage())
-                            );
-                        }
-                    });
+                }
 
                 return true;
             }
@@ -241,6 +279,10 @@ public class MapFragment extends Fragment {
     }
 
     private void performNominatimSearch(String query) {
+        if (!isAdded() || getContext() == null) {
+            return;
+        }
+
         String country = "vn"; // Tìm kiếm trong Việt Nam
         HttpUrl url = HttpUrl.parse("https://nominatim.openstreetmap.org/search")
                 .newBuilder()
@@ -252,15 +294,24 @@ public class MapFragment extends Fragment {
 
         Request request = new Request.Builder()
                 .url(url)
-                .header("User-Agent", requireActivity().getPackageName())
+                .header("User-Agent", getContext().getPackageName())
                 .build();
 
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                requireActivity().runOnUiThread(() -> 
-                    Toast.makeText(requireContext(), "Lỗi tìm kiếm: " + e.getMessage(), 
-                        Toast.LENGTH_SHORT).show());
+                // FIX: Check if Fragment is still attached
+                if (!isAdded() || getActivity() == null) {
+                    return;
+                }
+
+                mainHandler.post(() -> {
+                    if (!isAdded() || getContext() == null) {
+                        return;
+                    }
+                    Toast.makeText(getContext(), "Lỗi tìm kiếm: " + e.getMessage(),
+                            Toast.LENGTH_SHORT).show();
+                });
             }
 
             @Override
@@ -270,17 +321,26 @@ public class MapFragment extends Fragment {
                         String jsonData = response.body().string();
                         JSONArray results = new JSONArray(jsonData);
                         List<String> suggestions = new ArrayList<>();
-                        
+
                         for (int i = 0; i < results.length(); i++) {
                             JSONObject place = results.getJSONObject(i);
                             suggestions.add(place.getString("display_name"));
                         }
 
-                        requireActivity().runOnUiThread(() -> {
+                        // FIX: Check if Fragment is still attached
+                        if (!isAdded() || getActivity() == null) {
+                            return;
+                        }
+
+                        mainHandler.post(() -> {
+                            if (!isAdded() || getContext() == null) {
+                                return;
+                            }
+
                             ArrayAdapter<String> adapter = new ArrayAdapter<>(
-                                requireContext(),
-                                android.R.layout.simple_dropdown_item_1line,
-                                suggestions
+                                    getContext(),
+                                    android.R.layout.simple_dropdown_item_1line,
+                                    suggestions
                             );
                             searchEditText.setAdapter(adapter);
                             if (!suggestions.isEmpty()) {
@@ -289,9 +349,18 @@ public class MapFragment extends Fragment {
                         });
 
                     } catch (JSONException e) {
-                        requireActivity().runOnUiThread(() -> 
-                            Toast.makeText(requireContext(), "Lỗi xử lý dữ liệu: " + e.getMessage(), 
-                                Toast.LENGTH_SHORT).show());
+                        // FIX: Check if Fragment is still attached
+                        if (!isAdded() || getActivity() == null) {
+                            return;
+                        }
+
+                        mainHandler.post(() -> {
+                            if (!isAdded() || getContext() == null) {
+                                return;
+                            }
+                            Toast.makeText(getContext(), "Lỗi xử lý dữ liệu: " + e.getMessage(),
+                                    Toast.LENGTH_SHORT).show();
+                        });
                     }
                 }
             }
@@ -299,6 +368,10 @@ public class MapFragment extends Fragment {
     }
 
     private void findPlaceAndMoveCameraThere(String placeDescription) {
+        if (!isAdded() || getContext() == null) {
+            return;
+        }
+
         HttpUrl url = HttpUrl.parse("https://nominatim.openstreetmap.org/search")
                 .newBuilder()
                 .addQueryParameter("q", placeDescription)
@@ -308,15 +381,24 @@ public class MapFragment extends Fragment {
 
         Request request = new Request.Builder()
                 .url(url)
-                .header("User-Agent", requireActivity().getPackageName())
+                .header("User-Agent", getContext().getPackageName())
                 .build();
 
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                requireActivity().runOnUiThread(() -> 
-                    Toast.makeText(requireContext(), "Lỗi tìm kiếm: " + e.getMessage(), 
-                        Toast.LENGTH_SHORT).show());
+                // FIX: Check if Fragment is still attached
+                if (!isAdded() || getActivity() == null) {
+                    return;
+                }
+
+                mainHandler.post(() -> {
+                    if (!isAdded() || getContext() == null) {
+                        return;
+                    }
+                    Toast.makeText(getContext(), "Lỗi tìm kiếm: " + e.getMessage(),
+                            Toast.LENGTH_SHORT).show();
+                });
             }
 
             @Override
@@ -325,18 +407,27 @@ public class MapFragment extends Fragment {
                     try {
                         String jsonData = response.body().string();
                         JSONArray results = new JSONArray(jsonData);
-                        
+
                         if (results.length() > 0) {
                             JSONObject place = results.getJSONObject(0);
                             double lat = place.getDouble("lat");
                             double lon = place.getDouble("lon");
                             String name = place.getString("display_name");
 
-                            requireActivity().runOnUiThread(() -> {
+                            // FIX: Check if Fragment is still attached
+                            if (!isAdded() || getActivity() == null) {
+                                return;
+                            }
+
+                            mainHandler.post(() -> {
+                                if (!isAdded() || getActivity() == null) {
+                                    return;
+                                }
+
                                 GeoPoint point = new GeoPoint(lat, lon);
                                 mapView.getController().animateTo(point);
                                 mapView.getController().setZoom(16.0);
-                                
+
                                 // Xóa markers cũ
                                 clearAllMarkers();
 
@@ -346,9 +437,18 @@ public class MapFragment extends Fragment {
                         }
 
                     } catch (JSONException e) {
-                        requireActivity().runOnUiThread(() -> 
-                            Toast.makeText(requireContext(), "Lỗi xử lý dữ liệu: " + e.getMessage(), 
-                                Toast.LENGTH_SHORT).show());
+                        // FIX: Check if Fragment is still attached
+                        if (!isAdded() || getActivity() == null) {
+                            return;
+                        }
+
+                        mainHandler.post(() -> {
+                            if (!isAdded() || getContext() == null) {
+                                return;
+                            }
+                            Toast.makeText(getContext(), "Lỗi xử lý dữ liệu: " + e.getMessage(),
+                                    Toast.LENGTH_SHORT).show();
+                        });
                     }
                 }
             }
@@ -356,6 +456,10 @@ public class MapFragment extends Fragment {
     }
 
     private void addMarker(GeoPoint position, String title) {
+        if (!isAdded() || mapView == null) {
+            return;
+        }
+
         Marker marker = new Marker(mapView);
         marker.setPosition(position);
         marker.setTitle(title);
@@ -369,6 +473,10 @@ public class MapFragment extends Fragment {
     }
 
     private void toggleFullScreen() {
+        if (!isAdded()) {
+            return;
+        }
+
         isFullScreen = !isFullScreen;
         ConstraintLayout.LayoutParams params = (ConstraintLayout.LayoutParams) mapView.getLayoutParams();
 
@@ -384,10 +492,14 @@ public class MapFragment extends Fragment {
     }
 
     private void requestLocationPermissions() {
-        if (ActivityCompat.checkSelfPermission(requireContext(),
+        if (getActivity() == null) {
+            return;
+        }
+
+        if (ActivityCompat.checkSelfPermission(getActivity(),
                 Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(
-                    requireActivity(),
+                    getActivity(),
                     new String[]{
                             Manifest.permission.ACCESS_FINE_LOCATION,
                             Manifest.permission.ACCESS_COARSE_LOCATION
@@ -398,12 +510,20 @@ public class MapFragment extends Fragment {
     }
 
     private void requestLocationAndUpdateMap() {
-        if (ActivityCompat.checkSelfPermission(requireContext(),
+        if (!isAdded() || getActivity() == null) {
+            return;
+        }
+
+        if (ActivityCompat.checkSelfPermission(getActivity(),
                 Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             // Sử dụng FusedLocationProviderClient để lấy vị trí hiện tại
-            FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity());
+            FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(getActivity());
             fusedLocationClient.getLastLocation()
-                    .addOnSuccessListener(requireActivity(), location -> {
+                    .addOnSuccessListener(getActivity(), location -> {
+                        if (!isAdded() || getActivity() == null) {
+                            return;
+                        }
+
                         if (location != null) {
                             updateMapLocation(location.getLatitude(), location.getLongitude());
                             loadNearbyHeritages(location.getLatitude(), location.getLongitude());
@@ -411,17 +531,26 @@ public class MapFragment extends Fragment {
                             showMessage("Không thể lấy vị trí hiện tại");
                         }
                     })
-                    .addOnFailureListener(e -> showMessage("Lỗi: " + e.getMessage()));
+                    .addOnFailureListener(e -> {
+                        if (!isAdded()) {
+                            return;
+                        }
+                        showMessage("Lỗi: " + e.getMessage());
+                    });
         } else {
             requestLocationPermissions();
         }
     }
 
     private void updateMapLocation(double latitude, double longitude) {
+        if (!isAdded() || mapView == null) {
+            return;
+        }
+
         GeoPoint currentLocation = new GeoPoint(latitude, longitude);
         mapView.getController().animateTo(currentLocation);
         mapView.getController().setZoom(14.0);
-        
+
         // Thêm marker cho vị trí hiện tại
         Marker marker = new Marker(mapView);
         marker.setPosition(currentLocation);
@@ -429,65 +558,90 @@ public class MapFragment extends Fragment {
         marker.setTitle("Vị trí của bạn");
         mapView.getOverlays().add(marker);
         mapView.invalidate();
-    }    private void loadNearbyHeritages(double latitude, double longitude) {
+    }
+
+    private void loadNearbyHeritages(double latitude, double longitude) {
         if (heritageApiService == null) {
             showMessage("Lỗi: Không thể kết nối tới dịch vụ");
             return;
         }
 
         heritageApiService.getNearestHeritages(
-            latitude,
-            longitude,
-            DEFAULT_NEARBY_LIMIT,
-            new HeritageApiService.ApiCallback<HeritageResponse>() {
-                @Override
-                public void onSuccess(HeritageResponse result) {
-                    requireActivity().runOnUiThread(() -> {
-                        if (result != null && result.getHeritages() != null) {
-                            nearbyHeritages.clear();
-                            nearbyHeritages.addAll(result.getHeritages());
-                            nearbyHeritagesAdapter.notifyDataSetChanged();
-                            
-                            // Add markers for each heritage site
-                            for (Heritage heritage : result.getHeritages()) {
-                                if (heritage.getLatitude() != null && heritage.getLongitude() != null) {
-                                    GeoPoint heritagePoint = new GeoPoint(
-                                        heritage.getLatitude(),
-                                        heritage.getLongitude()
-                                    );
-                                    addMarker(heritagePoint, heritage.getName());
-                                }
-                            }
-                            
-                            showMessage(String.format("Tìm thấy %d di tích gần đây", result.getHeritages().size()));
-                        } else {
-                            showMessage("Không tìm thấy di tích nào gần đây");
+                latitude,
+                longitude,
+                DEFAULT_NEARBY_LIMIT,
+                new HeritageApiService.ApiCallback<HeritageResponse>() {
+                    @Override
+                    public void onSuccess(HeritageResponse result) {
+                        // FIX: Check if Fragment is still attached
+                        if (!isAdded() || getActivity() == null) {
+                            return;
                         }
-                    });
-                }
 
-                @Override
-                public void onError(Exception e) {
-                    requireActivity().runOnUiThread(() -> 
-                        showMessage("Lỗi khi tìm di tích: " + e.getMessage())
-                    );
-                }
-            });
+                        mainHandler.post(() -> {
+                            if (!isAdded() || getActivity() == null) {
+                                return;
+                            }
+
+                            if (result != null && result.getHeritages() != null) {
+                                nearbyHeritages.clear();
+                                nearbyHeritages.addAll(result.getHeritages());
+                                nearbyHeritagesAdapter.notifyDataSetChanged();
+
+                                // Add markers for each heritage site
+                                for (Heritage heritage : result.getHeritages()) {
+                                    if (heritage.getLatitude() != null && heritage.getLongitude() != null) {
+                                        GeoPoint heritagePoint = new GeoPoint(
+                                                heritage.getLatitude(),
+                                                heritage.getLongitude()
+                                        );
+                                        addMarker(heritagePoint, heritage.getName());
+                                    }
+                                }
+
+                                showMessage(String.format("Tìm thấy %d di tích gần đây", result.getHeritages().size()));
+                            } else {
+                                showMessage("Không tìm thấy di tích nào gần đây");
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onError(Exception e) {
+                        // FIX: Check if Fragment is still attached
+                        if (!isAdded() || getActivity() == null) {
+                            return;
+                        }
+
+                        mainHandler.post(() -> {
+                            if (!isAdded() || getActivity() == null) {
+                                return;
+                            }
+                            showMessage("Lỗi khi tìm di tích: " + e.getMessage());
+                        });
+                    }
+                });
     }
 
     private void showMessage(String message) {
-        if (messageText != null) {
-            messageText.setText(message);
-            messageText.setVisibility(View.VISIBLE);
-            new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                if (messageText != null) {
-                    messageText.setVisibility(View.GONE);
-                }
-            }, 3000); // Hide message after 3 seconds
+        if (!isAdded() || messageText == null) {
+            return;
         }
+
+        messageText.setText(message);
+        messageText.setVisibility(View.VISIBLE);
+        mainHandler.postDelayed(() -> {
+            if (isAdded() && messageText != null) {
+                messageText.setVisibility(View.GONE);
+            }
+        }, 3000); // Hide message after 3 seconds
     }
 
     private void clearAllMarkers() {
+        if (!isAdded() || mapView == null) {
+            return;
+        }
+
         List<Overlay> overlays = mapView.getOverlays();
         overlays.removeIf(overlay -> overlay instanceof Marker);
         mapView.invalidate();
@@ -496,18 +650,34 @@ public class MapFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        mapView.onResume();
+        if (mapView != null) {
+            mapView.onResume();
+        }
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        mapView.onPause();
+        if (mapView != null) {
+            mapView.onPause();
+        }
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        mapView.onDetach();
+
+        // Cancel any pending operations
+        if (searchHandler != null && searchRunnable != null) {
+            searchHandler.removeCallbacks(searchRunnable);
+        }
+
+        if (mainHandler != null) {
+            mainHandler.removeCallbacksAndMessages(null);
+        }
+
+        if (mapView != null) {
+            mapView.onDetach();
+        }
     }
 }

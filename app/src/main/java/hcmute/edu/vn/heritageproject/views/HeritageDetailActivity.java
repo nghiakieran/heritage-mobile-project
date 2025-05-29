@@ -8,6 +8,7 @@ import android.widget.Toast;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import androidx.viewpager2.widget.ViewPager2;
+import androidx.appcompat.widget.Toolbar;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -37,11 +38,19 @@ public class HeritageDetailActivity extends AppCompatActivity {
     private FavoritesService favoritesService;
     private boolean isFavorite = false;
     private HeritageApiService apiService;
+    private Toolbar toolbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_heritage_detail);
+
+        // Setup toolbar
+        toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
+        toolbar.setNavigationOnClickListener(v -> onBackPressed());
 
         // Initialize views
         heritageName = findViewById(R.id.heritageName);
@@ -141,8 +150,8 @@ public class HeritageDetailActivity extends AppCompatActivity {
                 public void onPageSelected(int position) {
                     for (int i = 0; i < sliderIndicator.getChildCount(); i++) {
                         sliderIndicator.getChildAt(i).setBackgroundResource(
-                            i == position ? R.drawable.indicator_dot_selected : R.drawable.indicator_dot_unselected
-                        );
+                                i == position ? R.drawable.indicator_dot_selected
+                                        : R.drawable.indicator_dot_unselected);
                     }
                 }
             });
@@ -168,7 +177,7 @@ public class HeritageDetailActivity extends AppCompatActivity {
                 tagView.setPadding(24, 8, 24, 8);
                 tagView.setTextSize(13);
                 LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+                        LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
                 lp.setMargins(0, 0, 16, 0);
                 tagView.setLayoutParams(lp);
                 tagContainer.addView(tagView);
@@ -179,8 +188,10 @@ public class HeritageDetailActivity extends AppCompatActivity {
 
         // Thông số
         if (heritage.getStats() != null) {
-            ((TextView) findViewById(R.id.heritageRating)).setText("Đánh giá: " + heritage.getStats().getAverageRating());
-            ((TextView) findViewById(R.id.heritageFavorites)).setText("Yêu thích: " + heritage.getStats().getTotalFavorites());
+            ((TextView) findViewById(R.id.heritageRating))
+                    .setText("Đánh giá: " + heritage.getStats().getAverageRating());
+            ((TextView) findViewById(R.id.heritageFavorites))
+                    .setText("Yêu thích: " + heritage.getStats().getTotalFavorites());
         } else {
             ((TextView) findViewById(R.id.heritageRating)).setText("Đánh giá: N/A");
             ((TextView) findViewById(R.id.heritageFavorites)).setText("Yêu thích: 0");
@@ -220,7 +231,8 @@ public class HeritageDetailActivity extends AppCompatActivity {
         eventsContainer.removeAllViews();
         if (heritage.getAdditionalInfo() != null && heritage.getAdditionalInfo().getHistoricalEvents() != null
                 && !heritage.getAdditionalInfo().getHistoricalEvents().isEmpty()) {
-            for (hcmute.edu.vn.heritageproject.api.models.Heritage.HistoricalEvent event : heritage.getAdditionalInfo().getHistoricalEvents()) {
+            for (hcmute.edu.vn.heritageproject.api.models.Heritage.HistoricalEvent event : heritage.getAdditionalInfo()
+                    .getHistoricalEvents()) {
                 TextView eventTitle = new TextView(this);
                 eventTitle.setText(event.getTitle());
                 eventTitle.setTextSize(16);

@@ -22,6 +22,22 @@
           }
         },
         {
+          "client_id": "1082290218511-a9v6ujb4e5n8sbdkmqng3apgi3e2bn3e.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "hcmute.edu.vn.heritageproject",
+            "certificate_hash": "63333ba0c222d8164e4f016c2838b52da980fbaf"
+          }
+        },
+        {
+          "client_id": "1082290218511-ed8gec4ef97855td4vvhjm5c0t6phs31.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "hcmute.edu.vn.heritageproject",
+            "certificate_hash": "2c29568971030cec2dd2c826f8aed4d0f6df265d"
+          }
+        },
+        {
           "client_id": "1082290218511-v8padq0at3l8888g847i8i39bb2mabm7.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
