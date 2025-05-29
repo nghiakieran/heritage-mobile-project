@@ -17,6 +17,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -67,7 +68,8 @@ public class HeritageFragment extends Fragment {
         emptyContentLayout = view.findViewById(R.id.emptyContentLayout);
         emptyTextView = view.findViewById(R.id.emptyTextView); // Thêm TextView trong layout nếu chưa có
 
-        recyclerViewHeritages.setLayoutManager(new LinearLayoutManager(getContext()));
+        // Sử dụng GridLayoutManager với 2 cột
+        recyclerViewHeritages.setLayoutManager(new GridLayoutManager(getContext(), 2));
         heritageAdapter = new HeritageAdapter(heritageList);
         recyclerViewHeritages.setAdapter(heritageAdapter);
 

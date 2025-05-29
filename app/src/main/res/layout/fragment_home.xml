@@ -79,6 +79,16 @@
             android:orientation="vertical"
             android:padding="16dp">
 
+            <!-- Carousel Section (moved inside scroll) -->
+            <androidx.viewpager2.widget.ViewPager2
+                android:id="@+id/heroCarousel"
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:layout_marginTop="8dp"
+                android:clipToPadding="false"
+                android:paddingHorizontal="0dp"
+                android:visibility="visible" />
+
             <!-- Banner Section -->
             <TextView
                 android:layout_width="wrap_content"

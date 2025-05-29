@@ -2,6 +2,7 @@ package hcmute.edu.vn.heritageproject.views.fragments;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
@@ -121,6 +122,10 @@ public class MapFragment extends Fragment {
                 mapView.getController().animateTo(heritagePoint);
                 mapView.getController().setZoom(16.0);
             }
+            // Mở chi tiết di tích
+            Intent intent = new Intent(getContext(), hcmute.edu.vn.heritageproject.views.HeritageDetailActivity.class);
+            intent.putExtra("heritageId", heritage.getId());
+            startActivity(intent);
         });
     }    private void initializeMap() {
         mapView.setTileSource(TileSourceFactory.MAPNIK);
