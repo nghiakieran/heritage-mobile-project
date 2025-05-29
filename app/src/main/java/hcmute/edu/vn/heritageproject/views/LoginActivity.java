@@ -17,10 +17,13 @@ import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
 
 import hcmute.edu.vn.heritageproject.R;
 import hcmute.edu.vn.heritageproject.databinding.ActivityLoginBinding;
+import hcmute.edu.vn.heritageproject.models.User;
+import hcmute.edu.vn.heritageproject.services.UserService;
 
 public class LoginActivity extends AppCompatActivity {
     private static final String TAG = "LoginActivity";
@@ -28,6 +31,7 @@ public class LoginActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
     private GoogleSignInClient mGoogleSignInClient;
     private ActivityResultLauncher<Intent> googleSignInLauncher;
+    private UserService userService;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,8 +39,9 @@ public class LoginActivity extends AppCompatActivity {
         binding = ActivityLoginBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        // Initialize Firebase Auth
+        // Initialize Firebase Auth và UserService
         mAuth = FirebaseAuth.getInstance();
+        userService = UserService.getInstance();
 
         // Configure Google Sign In
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -81,7 +86,7 @@ public class LoginActivity extends AppCompatActivity {
                 });
 
         setupClickListeners();
-        
+
         // Kiểm tra nếu activity được khởi chạy từ màn hình chính
         if (getIntent().getBooleanExtra("fromMainActivity", false)) {
             // Không tự động chuyển đến MainActivity nếu được mở từ MainActivity
@@ -104,8 +109,12 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void signInWithGoogle() {
-        Intent signInIntent = mGoogleSignInClient.getSignInIntent();
-        googleSignInLauncher.launch(signInIntent);
+        // Đăng xuất khỏi Google trước để hiển thị dialog chọn tài khoản
+        mGoogleSignInClient.signOut().addOnCompleteListener(task -> {
+            // Sau khi đăng xuất, hiển thị dialog chọn tài khoản
+            Intent signInIntent = mGoogleSignInClient.getSignInIntent();
+            googleSignInLauncher.launch(signInIntent);
+        });
     }
 
     private void firebaseAuthWithGoogle(String idToken) {
@@ -114,11 +123,47 @@ public class LoginActivity extends AppCompatActivity {
                 .addOnCompleteListener(this, task -> {
                     if (task.isSuccessful()) {
                         Log.d(TAG, "Firebase Google auth success");
-                        startMainActivity();
+                        FirebaseUser firebaseUser = task.getResult().getUser();
+
+                        // Kiểm tra xem user đã tồn tại trong Firestore chưa
+                        userService.getCurrentUser(new UserService.UserServiceCallback() {
+                            @Override
+                            public void onSuccess(User existingUser) {
+                                // Nếu user đã tồn tại, sử dụng thông tin từ Firestore
+                                Log.d(TAG, "User exists in Firestore, using existing data");
+                                Toast.makeText(LoginActivity.this, "Đăng nhập thành công", Toast.LENGTH_SHORT).show();
+                                startMainActivity();
+                            }
+
+                            @Override
+                            public void onError(String error) {
+                                // Nếu user chưa tồn tại, tạo mới user
+                                Log.d(TAG, "User does not exist in Firestore, creating new user");
+                                userService.handleUserLogin(firebaseUser, new UserService.UserServiceCallback() {
+                                    @Override
+                                    public void onSuccess(User user) {
+                                        Log.d(TAG, "New user created successfully");
+                                        Toast.makeText(LoginActivity.this, "Đăng nhập thành công", Toast.LENGTH_SHORT)
+                                                .show();
+                                        startMainActivity();
+                                    }
+
+                                    @Override
+                                    public void onError(String createError) {
+                                        Log.e(TAG, "Error creating new user: " + createError);
+                                        Toast.makeText(LoginActivity.this, "Lỗi: " + createError, Toast.LENGTH_SHORT)
+                                                .show();
+                                    }
+                                });
+                            }
+                        });
                     } else {
                         Log.e(TAG, "Firebase Google auth failed", task.getException());
-                        Toast.makeText(LoginActivity.this, "Xác thực thất bại",
-                                Toast.LENGTH_SHORT).show();
+                        String errorMessage = "Đăng nhập thất bại: ";
+                        if (task.getException() != null) {
+                            errorMessage += task.getException().getMessage();
+                        }
+                        Toast.makeText(LoginActivity.this, errorMessage, Toast.LENGTH_SHORT).show();
                     }
                 });
     }
