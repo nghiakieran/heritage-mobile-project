@@ -98,9 +98,8 @@ public class HeritageFragment extends Fragment {
         // Setup SwipeRefreshLayout nếu có
         if (swipeRefreshLayout != null) {
             swipeRefreshLayout.setOnRefreshListener(() -> {
-                // Xóa cache và gọi lại API
-                cachedHeritages = null;
-                loadAllHeritages();
+                // Xóa cache và gọi lại API                cachedHeritages = null;
+                loadAllHeritages(null); // Pass null as search query to load all heritages
             });
         }
 
