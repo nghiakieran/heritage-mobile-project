@@ -2,14 +2,13 @@ package hcmute.edu.vn.heritageproject.views.fragments;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
+import android.widget.ImageView; // Import ImageView
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
@@ -17,6 +16,8 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
+
+import com.bumptech.glide.Glide; // Import Glide
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,24 +34,27 @@ import hcmute.edu.vn.heritageproject.models.CulturalEvent;
 import hcmute.edu.vn.heritageproject.models.HeroSlide;
 import hcmute.edu.vn.heritageproject.views.HeritageDetailActivity;
 
-public class HomeFragment extends Fragment {    private static final String TAG = "HomeFragment";
-    private RecyclerView recyclerViewBanners;    private RecyclerView recyclerViewPopularHeritages;
+public class HomeFragment extends Fragment {
+    private static final String TAG = "HomeFragment";
+    private RecyclerView recyclerViewBanners;
+    private RecyclerView recyclerViewPopularHeritages;
     private RecyclerView recyclerViewRandomHeritages;
     private RecyclerView recyclerViewEvents;
     private ProgressBar loadingProgressBar;
     private View scrollContent;
     private EditText searchEditText;
     private ViewPager2 heroCarousel;
-    
+    private ImageView gifImageView; // Declare ImageView for the GIF
+
     private HeritageRepository heritageRepository;
     private List<Heritage> popularHeritages = new ArrayList<>();
     private List<Heritage> randomHeritages = new ArrayList<>();
     private HeritageAdapter popularHeritageAdapter;
     private HeritageAdapter randomHeritageAdapter;
-    
+
     private List<HeroSlide> heroSlides = new ArrayList<>();
     private HeroCarouselAdapter heroCarouselAdapter;
-    
+
     // Variables to track loading state
     private int pendingApiCalls = 0;
     private final Object apiCallLock = new Object();
@@ -60,43 +64,58 @@ public class HomeFragment extends Fragment {    private static final String TAG 
 
     public HomeFragment() {
         // Required empty public constructor
-    }    @Override
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_home, container, false);        // Initialize repository
+        View view = inflater.inflate(R.layout.fragment_home, container, false);
+
+        // Initialize repository
         heritageRepository = new HeritageRepository();
-          
+
         // Initialize loading indicator and content view
         loadingProgressBar = view.findViewById(R.id.loadingProgressBar);
         scrollContent = view.findViewById(R.id.scrollContent);
         showLoading(true);
-        
+
         // Initialize search EditText
         searchEditText = view.findViewById(R.id.searchEditText);
         setupSearchFunctionality();
-        
+
         // Setup banner recycler view (for featured heritages - most popular by totalFavorites)
         recyclerViewBanners = view.findViewById(R.id.recyclerViewBanners);
         recyclerViewBanners.setLayoutManager(
-            new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
+                new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
         popularHeritageAdapter = new HeritageAdapter(popularHeritages);
         recyclerViewBanners.setAdapter(popularHeritageAdapter);
-        
+
         // Setup popular monuments recycler view (for random heritages)
         recyclerViewPopularHeritages = view.findViewById(R.id.recyclerViewPopularMonuments);
         recyclerViewPopularHeritages.setLayoutManager(
-            new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
+                new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
         randomHeritageAdapter = new HeritageAdapter(randomHeritages);
         recyclerViewPopularHeritages.setAdapter(randomHeritageAdapter);
-        
+
         // Setup events recycler view
         recyclerViewEvents = view.findViewById(R.id.recyclerViewEvents);
         recyclerViewEvents.setLayoutManager(
-            new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
-        
+                new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
+
         // Setup hero carousel (ViewPager2)
         heroCarousel = view.findViewById(R.id.heroCarousel);
         setupHeroCarousel();
+
+        // Initialize and load GIF using Glide
+        gifImageView = view.findViewById(R.id.gifImageView); // Find the ImageView by its ID
+        if (gifImageView != null) {
+            Glide.with(this)
+                    .asGif()
+                    .load(R.drawable.video) // Make sure heritage_animation.gif is in drawable folder
+                    .into(gifImageView);
+        } else {
+            Log.e(TAG, "gifImageView not found in layout.");
+        }
 
         // Load data
         loadFeaturedHeritages();
@@ -111,10 +130,12 @@ public class HomeFragment extends Fragment {    private static final String TAG 
         banners.add(new Banner("Quảng bá Cố đô Huế", "Ghé thăm Đại Nội và Lăng Tẩm Nguyễn", R.drawable.banner_hue));
         banners.add(new Banner("Khám phá Hội An", "Thành phố cổ di sản UNESCO", R.drawable.banner_hoian));
         banners.add(new Banner("Thành nhà Hồ", "Di sản văn hóa thế giới tại Thanh Hóa", R.drawable.banner_thanhnhaho));
-        
+
         BannerAdapter bannerAdapter = new BannerAdapter(banners);
         recyclerViewBanners.setAdapter(bannerAdapter);
-    }    private void loadFeaturedHeritages() {
+    }
+
+    private void loadFeaturedHeritages() {
         // Get popular heritages (sorted by totalFavorites)
         incrementPendingApiCall(); // Mark that we're starting an API call
         heritageRepository.getPopularHeritages(new HeritageRepository.HeritageCallback() {
@@ -129,14 +150,14 @@ public class HomeFragment extends Fragment {    private static final String TAG 
                                 popularHeritages.clear();
                                 popularHeritages.addAll(heritages);
                                 popularHeritageAdapter.notifyDataSetChanged();
-                                
+
                                 // Set click listener for heritage items
                                 popularHeritageAdapter.setOnHeritageClickListener(new HeritageAdapter.OnHeritageClickListener() {
                                     @Override
                                     public void onHeritageClick(Heritage heritage) {
-                                         Intent intent = new Intent(getContext(), HeritageDetailActivity.class);
-                                         intent.putExtra("heritageId", heritage.getId());
-                                         startActivity(intent);
+                                        Intent intent = new Intent(getContext(), HeritageDetailActivity.class);
+                                        intent.putExtra("heritageId", heritage.getId());
+                                        startActivity(intent);
                                     }                                });
 
                                 decrementPendingApiCall();
@@ -145,7 +166,7 @@ public class HomeFragment extends Fragment {    private static final String TAG 
                     });
                 }
             }
-            
+
             @Override
             public void onError(final Exception e) {
                 if (getActivity() != null) {
@@ -155,7 +176,7 @@ public class HomeFragment extends Fragment {    private static final String TAG 
                             if (isAdded()) {  // Kiểm tra Fragment còn được đính kèm vào Activity không
                                 Log.e(TAG, "Failed to load popular heritages", e);
                                 Toast.makeText(getContext(), "Không thể tải di tích nổi bật", Toast.LENGTH_SHORT).show();
-                                
+
                                 // Mark this API call as complete even though it failed
                                 decrementPendingApiCall();
                             }
@@ -164,7 +185,9 @@ public class HomeFragment extends Fragment {    private static final String TAG 
                 }
             }
         });
-    }    private void loadPopularHeritages() {
+    }
+
+    private void loadPopularHeritages() {
         // Get random heritages
         incrementPendingApiCall(); // Mark that we're starting an API call
         heritageRepository.getRandomHeritages(new HeritageRepository.HeritageCallback() {
@@ -179,17 +202,17 @@ public class HomeFragment extends Fragment {    private static final String TAG 
                                 randomHeritages.clear();
                                 randomHeritages.addAll(heritages);
                                 randomHeritageAdapter.notifyDataSetChanged();
-                                
+
                                 // Set click listener for heritage items
                                 randomHeritageAdapter.setOnHeritageClickListener(new HeritageAdapter.OnHeritageClickListener() {
                                     @Override
                                     public void onHeritageClick(Heritage heritage) {
-                                         Intent intent = new Intent(getContext(), HeritageDetailActivity.class);
-                                         intent.putExtra("heritageId", heritage.getId());
-                                         startActivity(intent);
+                                        Intent intent = new Intent(getContext(), HeritageDetailActivity.class);
+                                        intent.putExtra("heritageId", heritage.getId());
+                                        startActivity(intent);
                                     }
                                 });
-                                
+
                                 // Mark this API call as complete
                                 decrementPendingApiCall();
                             }
@@ -197,7 +220,7 @@ public class HomeFragment extends Fragment {    private static final String TAG 
                     });
                 }
             }
-            
+
             @Override
             public void onError(final Exception e) {
                 if (getActivity() != null) {
@@ -207,7 +230,7 @@ public class HomeFragment extends Fragment {    private static final String TAG 
                             if (isAdded()) {  // Kiểm tra Fragment còn được đính kèm vào Activity không
                                 Log.e(TAG, "Failed to load random heritages", e);
                                 Toast.makeText(getContext(), "Không thể tải di tích phổ biến", Toast.LENGTH_SHORT).show();
-                                
+
                                 // Mark this API call as complete even though it failed
                                 decrementPendingApiCall();
                             }
@@ -221,27 +244,27 @@ public class HomeFragment extends Fragment {    private static final String TAG 
     private void loadEvents() {
         // Increment the API call counter to reflect that we're loading data
         incrementPendingApiCall();
-        
+
         List<CulturalEvent> events = new ArrayList<>();
-        events.add(new CulturalEvent("Lễ hội Đền Hùng", 
-            "03/06/2025 - 10/06/2025", 
-            "Phú Thọ", 
-            "Lễ hội tưởng nhớ các Vua Hùng đã có công dựng nước", 
-            R.drawable.event_den_hung));
-        events.add(new CulturalEvent("Festival Huế 2025", 
-            "01/07/2025 - 06/07/2025", 
-            "Thừa Thiên Huế", 
-            "Lễ hội văn hóa, nghệ thuật quốc tế diễn ra 2 năm một lần", 
-            R.drawable.event_hue));
-        events.add(new CulturalEvent("Hội Đèn Lồng Hội An", 
-            "14/08/2025", 
-            "Quảng Nam", 
-            "Đêm phố cổ lung linh ánh đèn lồng vào đêm rằm", 
-            R.drawable.event_hoian));
-        
+        events.add(new CulturalEvent("Lễ hội Đền Hùng",
+                "03/06/2025 - 10/06/2025",
+                "Phú Thọ",
+                "Lễ hội tưởng nhớ các Vua Hùng đã có công dựng nước",
+                R.drawable.event_den_hung));
+        events.add(new CulturalEvent("Festival Huế 2025",
+                "01/07/2025 - 06/07/2025",
+                "Thừa Thiên Huế",
+                "Lễ hội văn hóa, nghệ thuật quốc tế diễn ra 2 năm một lần",
+                R.drawable.event_hue));
+        events.add(new CulturalEvent("Hội Đèn Lồng Hội An",
+                "14/08/2025",
+                "Quảng Nam",
+                "Đêm phố cổ lung linh ánh đèn lồng vào đêm rằm",
+                R.drawable.event_hoian));
+
         EventAdapter eventAdapter = new EventAdapter(events);
         recyclerViewEvents.setAdapter(eventAdapter);
-        
+
         // Mark the events loading as complete (since it's using local data)
         decrementPendingApiCall();
     }
@@ -303,19 +326,19 @@ public class HomeFragment extends Fragment {    private static final String TAG 
             Bundle args = new Bundle();
             args.putString("SEARCH_QUERY", searchQuery);
             heritageFragment.setArguments(args);
-            
+
             // Chuyển đến HeritageFragment
             getActivity().getSupportFragmentManager()
-                .beginTransaction()
-                .replace(R.id.fragmentContainer, heritageFragment)
-                .addToBackStack(null)
-                .commit();
-            
+                    .beginTransaction()
+                    .replace(R.id.fragmentContainer, heritageFragment)
+                    .addToBackStack(null)
+                    .commit();
+
             // Hiển thị thông báo đang chuyển hướng tìm kiếm
             // Toast.makeText(getContext(), "Đang tìm kiếm: " + searchQuery, Toast.LENGTH_SHORT).show();
         }
     }
-    
+
     private void setupHeroCarousel() {
         heroSlides.clear();
         heroSlides.add(new HeroSlide(1,
