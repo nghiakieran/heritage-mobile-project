@@ -2,10 +2,15 @@ package hcmute.edu.vn.heritageproject.views.fragments;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
+import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
@@ -24,30 +29,40 @@ import hcmute.edu.vn.heritageproject.views.adapters.EventAdapter;
 import hcmute.edu.vn.heritageproject.models.Banner;
 import hcmute.edu.vn.heritageproject.models.CulturalEvent;
 
-public class HomeFragment extends Fragment {
-
-    private static final String TAG = "HomeFragment";
-    private RecyclerView recyclerViewBanners;
-    private RecyclerView recyclerViewPopularHeritages;
+public class HomeFragment extends Fragment {    private static final String TAG = "HomeFragment";
+    private RecyclerView recyclerViewBanners;    private RecyclerView recyclerViewPopularHeritages;
     private RecyclerView recyclerViewRandomHeritages;
     private RecyclerView recyclerViewEvents;
+    private ProgressBar loadingProgressBar;
+    private View scrollContent;
+    private EditText searchEditText;
     
     private HeritageRepository heritageRepository;
     private List<Heritage> popularHeritages = new ArrayList<>();
     private List<Heritage> randomHeritages = new ArrayList<>();
     private HeritageAdapter popularHeritageAdapter;
     private HeritageAdapter randomHeritageAdapter;
+    
+    // Variables to track loading state
+    private int pendingApiCalls = 0;
+    private final Object apiCallLock = new Object();
 
     public HomeFragment() {
         // Required empty public constructor
     }    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_home, container, false);
-
-        // Initialize repository
+                             Bundle savedInstanceState) {        // Inflate the layout for this fragment
+        View view = inflater.inflate(R.layout.fragment_home, container, false);        // Initialize repository
         heritageRepository = new HeritageRepository();
+          
+        // Initialize loading indicator and content view
+        loadingProgressBar = view.findViewById(R.id.loadingProgressBar);
+        scrollContent = view.findViewById(R.id.scrollContent);
+        showLoading(true);
+        
+        // Initialize search EditText
+        searchEditText = view.findViewById(R.id.searchEditText);
+        setupSearchFunctionality();
         
         // Setup banner recycler view (for featured heritages - most popular by totalFavorites)
         recyclerViewBanners = view.findViewById(R.id.recyclerViewBanners);
@@ -86,6 +101,7 @@ public class HomeFragment extends Fragment {
         recyclerViewBanners.setAdapter(bannerAdapter);
     }    private void loadFeaturedHeritages() {
         // Get popular heritages (sorted by totalFavorites)
+        incrementPendingApiCall(); // Mark that we're starting an API call
         heritageRepository.getPopularHeritages(new HeritageRepository.HeritageCallback() {
             @Override
             public void onHeritagesLoaded(final List<Heritage> heritages) {
@@ -109,8 +125,10 @@ public class HomeFragment extends Fragment {
                                         // Intent intent = new Intent(getContext(), HeritageDetailActivity.class);
                                         // intent.putExtra("heritageId", heritage.getId());
                                         // startActivity(intent);
-                                    }
-                                });
+                                    }                                });
+                                
+                                // Mark this API call as complete
+                                decrementPendingApiCall();
                             }
                         }
                     });
@@ -126,15 +144,18 @@ public class HomeFragment extends Fragment {
                             if (isAdded()) {  // Kiểm tra Fragment còn được đính kèm vào Activity không
                                 Log.e(TAG, "Failed to load popular heritages", e);
                                 Toast.makeText(getContext(), "Không thể tải di tích nổi bật", Toast.LENGTH_SHORT).show();
+                                
+                                // Mark this API call as complete even though it failed
+                                decrementPendingApiCall();
                             }
                         }
                     });
                 }
             }
         });
-    }
-    private void loadPopularHeritages() {
+    }    private void loadPopularHeritages() {
         // Get random heritages
+        incrementPendingApiCall(); // Mark that we're starting an API call
         heritageRepository.getRandomHeritages(new HeritageRepository.HeritageCallback() {
             @Override
             public void onHeritagesLoaded(final List<Heritage> heritages) {
@@ -160,6 +181,9 @@ public class HomeFragment extends Fragment {
                                         // startActivity(intent);
                                     }
                                 });
+                                
+                                // Mark this API call as complete
+                                decrementPendingApiCall();
                             }
                         }
                     });
@@ -175,15 +199,19 @@ public class HomeFragment extends Fragment {
                             if (isAdded()) {  // Kiểm tra Fragment còn được đính kèm vào Activity không
                                 Log.e(TAG, "Failed to load random heritages", e);
                                 Toast.makeText(getContext(), "Không thể tải di tích phổ biến", Toast.LENGTH_SHORT).show();
+                                
+                                // Mark this API call as complete even though it failed
+                                decrementPendingApiCall();
                             }
                         }
                     });
                 }
             }
         });
-    }
-
-    private void loadEvents() {
+    }private void loadEvents() {
+        // Increment the API call counter to reflect that we're loading data
+        incrementPendingApiCall();
+        
         List<CulturalEvent> events = new ArrayList<>();
         events.add(new CulturalEvent("Lễ hội Đền Hùng", 
             "03/06/2025 - 10/06/2025", 
@@ -203,5 +231,96 @@ public class HomeFragment extends Fragment {
         
         EventAdapter eventAdapter = new EventAdapter(events);
         recyclerViewEvents.setAdapter(eventAdapter);
+        
+        // Mark the events loading as complete (since it's using local data)
+        decrementPendingApiCall();
+    }
+      /**
+     * Shows or hides the loading indicator and toggles content visibility
+     */
+    private void showLoading(final boolean isLoading) {
+        if (getActivity() != null) {
+            getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    if (isAdded()) {
+                        // Show loading indicator and hide content when loading
+                        loadingProgressBar.setVisibility(isLoading ? View.VISIBLE : View.GONE);
+                        scrollContent.setVisibility(isLoading ? View.GONE : View.VISIBLE);
+                    }
+                }
+            });
+        }
+    }
+    
+    /**
+     * Increment the pending API call counter and show loading indicator
+     */
+    private void incrementPendingApiCall() {
+        synchronized (apiCallLock) {
+            pendingApiCalls++;
+            showLoading(true);
+        }
+    }
+    
+    /**
+     * Decrement the pending API call counter and hide loading indicator if all calls complete
+     */
+    private void decrementPendingApiCall() {
+        synchronized (apiCallLock) {
+            pendingApiCalls--;
+            if (pendingApiCalls <= 0) {
+                pendingApiCalls = 0; // Ensure it doesn't go negative
+                showLoading(false);
+            }
+        }
+    }
+    
+    /**
+     * Thiết lập xử lý sự kiện cho chức năng tìm kiếm
+     */
+    private void setupSearchFunctionality() {
+        // Xử lý khi người dùng nhấn nút tìm kiếm trên bàn phím
+        searchEditText.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                performSearch();
+                return true;
+            }
+            return false;
+        });
+    }
+    
+    /**
+     * Thực hiện tìm kiếm và chuyển đến trang HeritageFragment với từ khóa tìm kiếm
+     */
+    private void performSearch() {
+        String searchQuery = searchEditText.getText().toString().trim();
+        if (!searchQuery.isEmpty()) {
+            navigateToHeritageFragmentWithSearch(searchQuery);
+        }
+    }
+    
+    /**
+     * Chuyển đến tab HeritageFragment và truyền từ khóa tìm kiếm
+     * @param searchQuery Từ khóa tìm kiếm
+     */
+    private void navigateToHeritageFragmentWithSearch(String searchQuery) {
+        if (getActivity() != null) {
+            // Tạo một instance mới của HeritageFragment với từ khóa tìm kiếm
+            HeritageFragment heritageFragment = new HeritageFragment();
+            Bundle args = new Bundle();
+            args.putString("SEARCH_QUERY", searchQuery);
+            heritageFragment.setArguments(args);
+            
+            // Chuyển đến HeritageFragment
+            getActivity().getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.fragmentContainer, heritageFragment)
+                .addToBackStack(null)
+                .commit();
+            
+            // Hiển thị thông báo đang chuyển hướng tìm kiếm
+            // Toast.makeText(getContext(), "Đang tìm kiếm: " + searchQuery, Toast.LENGTH_SHORT).show();
+        }
     }
 }

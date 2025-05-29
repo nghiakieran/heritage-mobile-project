@@ -61,19 +61,35 @@ public class HeritageDetailActivity extends AppCompatActivity {
             Toast.makeText(this, "Không có kết nối mạng. Vui lòng thử lại.", Toast.LENGTH_SHORT).show();
             finish();
         }
-    }
-
-    private void loadHeritageDetails(String heritageId) {
+    }    private void loadHeritageDetails(String heritageId) {
         apiService.getHeritageById(heritageId, new HeritageApiService.ApiCallback<HeritageResponse>() {
             @Override
             public void onSuccess(HeritageResponse result) {
                 runOnUiThread(() -> {
-                    if (result.isSuccess() && result.getHeritages() != null && !result.getHeritages().isEmpty()) {
-                        Heritage heritage = result.getHeritages().get(0);
-                        displayHeritageDetails(heritage);
-                    } else {
+                    try {
+                        if (result.getHeritages() != null && !result.getHeritages().isEmpty()) {
+                            Heritage heritage = result.getHeritages().get(0);
+                            if (heritage.getId() != null && !heritage.getId().isEmpty()) {
+                                Log.d(TAG, "Successfully loaded heritage with ID: " + heritage.getId());
+                                displayHeritageDetails(heritage);
+                            } else {
+                                Log.e(TAG, "Loaded heritage has empty ID");
+                                Toast.makeText(HeritageDetailActivity.this,
+                                        "Chi tiết di tích không hợp lệ: Thiếu ID", 
+                                        Toast.LENGTH_SHORT).show();
+                                finish();
+                            }
+                        } else {
+                            Log.e(TAG, "Heritage list is empty or null");
+                            Toast.makeText(HeritageDetailActivity.this,
+                                    "Không thể tải chi tiết di tích: Dữ liệu không đúng định dạng",
+                                    Toast.LENGTH_SHORT).show();
+                            finish();
+                        }
+                    } catch (Exception e) {
+                        Log.e(TAG, "Error processing heritage data", e);
                         Toast.makeText(HeritageDetailActivity.this,
-                                "Không thể tải chi tiết di tích: " + result.getMessage(),
+                                "Lỗi xử lý dữ liệu di tích: " + e.getMessage(),
                                 Toast.LENGTH_SHORT).show();
                         finish();
                     }
@@ -91,9 +107,9 @@ public class HeritageDetailActivity extends AppCompatActivity {
                 });
             }
         });
-    }
-
-    private void displayHeritageDetails(Heritage heritage) {
+    }    private void displayHeritageDetails(Heritage heritage) {
+        Log.d(TAG, "Displaying heritage details - Name: " + heritage.getName() + ", ID: " + heritage.getId());
+        
         // Set heritage name
         heritageName.setText(heritage.getName());
 
