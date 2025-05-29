@@ -20,6 +20,7 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import java.text.Normalizer;
 import java.util.ArrayList;
@@ -40,6 +41,9 @@ public class HeritageFragment extends Fragment {
     private static final int DEFAULT_PAGE = 1;
     private static final int DEFAULT_LIMIT = 50;
 
+    // Cache tĩnh - chỉ cần thêm dòng này
+    private static List<Heritage> cachedHeritages = null;
+
     private RecyclerView recyclerViewHeritages;
     private HeritageAdapter heritageAdapter;
     private List<Heritage> heritageList = new ArrayList<>();
@@ -50,6 +54,7 @@ public class HeritageFragment extends Fragment {
     private EditText searchEditText;
     private LinearLayout emptyContentLayout;
     private TextView emptyTextView;
+    private SwipeRefreshLayout swipeRefreshLayout; // Thêm SwipeRefreshLayout
 
     public HeritageFragment() {}
 
@@ -66,7 +71,8 @@ public class HeritageFragment extends Fragment {
         progressBar = view.findViewById(R.id.progressBar);
         searchEditText = view.findViewById(R.id.searchEditText);
         emptyContentLayout = view.findViewById(R.id.emptyContentLayout);
-        emptyTextView = view.findViewById(R.id.emptyTextView); // Thêm TextView trong layout nếu chưa có
+        emptyTextView = view.findViewById(R.id.emptyTextView);
+        swipeRefreshLayout = view.findViewById(R.id.swipeRefreshLayout); // Nếu có trong layout
 
         // Sử dụng GridLayoutManager với 2 cột
         recyclerViewHeritages.setLayoutManager(new GridLayoutManager(getContext(), 2));
@@ -87,7 +93,18 @@ public class HeritageFragment extends Fragment {
         if (apiService == null) {
             Toast.makeText(getContext(), "Lỗi khởi tạo API service", Toast.LENGTH_SHORT).show();
             return;
-        }        showEmptyState("Đang tải dữ liệu...");
+        }
+
+        // Setup SwipeRefreshLayout nếu có
+        if (swipeRefreshLayout != null) {
+            swipeRefreshLayout.setOnRefreshListener(() -> {
+                // Xóa cache và gọi lại API
+                cachedHeritages = null;
+                loadAllHeritages();
+            });
+        }
+
+        showEmptyState("Đang tải dữ liệu...");
         
         // Kiểm tra xem có từ khóa tìm kiếm được truyền từ HomeFragment không
         Bundle args = getArguments();
@@ -110,6 +127,26 @@ public class HeritageFragment extends Fragment {
     }
 
     private void loadAllHeritages() {
+        // Kiểm tra cache trước
+        if (cachedHeritages != null && !cachedHeritages.isEmpty()) {
+            // Dùng cache, không gọi API
+            hideLoading();
+            if (swipeRefreshLayout != null) {
+                swipeRefreshLayout.setRefreshing(false);
+            }
+            
+            originalHeritageList.clear();
+            originalHeritageList.addAll(cachedHeritages);
+
+            heritageList.clear();
+            heritageList.addAll(originalHeritageList);
+            heritageAdapter.notifyDataSetChanged();
+            showHeritageList();
+            
+            Log.d(TAG, "Loaded from cache: " + cachedHeritages.size() + " items");
+            return;
+        }
+
         if (!NetworkUtils.isNetworkAvailable(getContext())) {
             showOfflineMessage();
             return;
@@ -124,7 +161,14 @@ public class HeritageFragment extends Fragment {
 
                 getActivity().runOnUiThread(() -> {
                     hideLoading();
+                    if (swipeRefreshLayout != null) {
+                        swipeRefreshLayout.setRefreshing(false);
+                    }
+                    
                     if (result.getHeritages() != null && !result.getHeritages().isEmpty()) {
+                        // Lưu vào cache
+                        cachedHeritages = new ArrayList<>(result.getHeritages());
+                        
                         originalHeritageList.clear();
                         originalHeritageList.addAll(result.getHeritages());
 
@@ -132,6 +176,8 @@ public class HeritageFragment extends Fragment {
                         heritageList.addAll(originalHeritageList);
                         heritageAdapter.notifyDataSetChanged();
                         showHeritageList();
+                        
+                        Log.d(TAG, "Loaded from API and cached: " + result.getHeritages().size() + " items");
                     } else {
                         showEmptyState("Không có di tích nào.");
                     }
@@ -144,6 +190,9 @@ public class HeritageFragment extends Fragment {
 
                 getActivity().runOnUiThread(() -> {
                     hideLoading();
+                    if (swipeRefreshLayout != null) {
+                        swipeRefreshLayout.setRefreshing(false);
+                    }
                     Toast.makeText(getContext(), "Lỗi khi tải danh sách di tích: " + e.getMessage(), Toast.LENGTH_LONG).show();
                     showEmptyState("Không thể tải dữ liệu.");
                 });
@@ -204,5 +253,10 @@ public class HeritageFragment extends Fragment {
     private void showOfflineMessage() {
         Toast.makeText(getContext(), "Không có kết nối mạng. Vui lòng thử lại sau.", Toast.LENGTH_LONG).show();
         showEmptyState("Không có kết nối mạng.");
+    }
+
+    // Phương thức công khai để các Fragment/Activity khác có thể xóa cache
+    public static void clearCache() {
+        cachedHeritages = null;
     }
 }

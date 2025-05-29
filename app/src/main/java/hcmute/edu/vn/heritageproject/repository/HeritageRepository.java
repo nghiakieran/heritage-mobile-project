@@ -12,6 +12,8 @@ import hcmute.edu.vn.heritageproject.api.models.HeritageResponse;
 
 public class HeritageRepository {
     private final HeritageApiService apiService;
+    // Thêm biến cache static
+    private static List<Heritage> cachedHeritages = null;
 
     public HeritageRepository() {
         this.apiService = HeritageApiService.getInstance();
@@ -26,11 +28,42 @@ public class HeritageRepository {
      * Get the 5 most popular heritage sites based on the totalFavorites value
      */
     public void getPopularHeritages(final HeritageCallback callback) {
+        // Nếu đã có cache thì dùng cache
+        if (cachedHeritages != null) {
+            List<Heritage> heritages = new ArrayList<>(cachedHeritages);
+            Collections.sort(heritages, new Comparator<Heritage>() {
+                @Override
+                public int compare(Heritage h1, Heritage h2) {
+                    int fav1 = 0, fav2 = 0;
+                    try {
+                        if (h1.getStats() != null && h1.getStats().getTotalFavorites() != null) {
+                            fav1 = Integer.parseInt(h1.getStats().getTotalFavorites());
+                        }
+                    } catch (NumberFormatException e) {
+                        fav1 = 0;
+                    }
+                    try {
+                        if (h2.getStats() != null && h2.getStats().getTotalFavorites() != null) {
+                            fav2 = Integer.parseInt(h2.getStats().getTotalFavorites());
+                        }
+                    } catch (NumberFormatException e) {
+                        fav2 = 0;
+                    }
+                    return Integer.compare(fav2, fav1);
+                }
+            });
+            int count = Math.min(heritages.size(), 5);
+            List<Heritage> popularHeritages = heritages.subList(0, count);
+            callback.onHeritagesLoaded(popularHeritages);
+            return;
+        }
+        // Chưa có cache, gọi API
         apiService.getAllHeritages(new HeritageApiService.ApiCallback<HeritageResponse>() {
             @Override
             public void onSuccess(HeritageResponse result) {
                 if (result != null && result.getHeritages() != null) {
-                    List<Heritage> heritages = new ArrayList<>(result.getHeritages());
+                    cachedHeritages = new ArrayList<>(result.getHeritages()); // Lưu cache
+                    List<Heritage> heritages = new ArrayList<>(cachedHeritages);
                     
                     // Sort by totalFavorites (descending)
                     Collections.sort(heritages, new Comparator<Heritage>() {
@@ -80,11 +113,22 @@ public class HeritageRepository {
      * Get 5 random heritage sites
      */
     public void getRandomHeritages(final HeritageCallback callback) {
+        // Nếu đã có cache thì dùng cache
+        if (cachedHeritages != null) {
+            List<Heritage> heritages = new ArrayList<>(cachedHeritages);
+            Collections.shuffle(heritages, new Random());
+            int count = Math.min(heritages.size(), 5);
+            List<Heritage> randomHeritages = heritages.subList(0, count);
+            callback.onHeritagesLoaded(randomHeritages);
+            return;
+        }
+        // Chưa có cache, gọi API
         apiService.getAllHeritages(new HeritageApiService.ApiCallback<HeritageResponse>() {
             @Override
             public void onSuccess(HeritageResponse result) {
                 if (result != null && result.getHeritages() != null && !result.getHeritages().isEmpty()) {
-                    List<Heritage> heritages = new ArrayList<>(result.getHeritages());
+                    cachedHeritages = new ArrayList<>(result.getHeritages()); // Lưu cache
+                    List<Heritage> heritages = new ArrayList<>(cachedHeritages);
                     
                     // Shuffle the list to get random elements
                     Collections.shuffle(heritages, new Random());
