@@ -1,30 +1,157 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto" android:layout_width="match_parent" android:layout_height="match_parent" android:fillViewport="true">
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:fillViewport="true">
 
-    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="16dp">
+    <LinearLayout
+        android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:orientation="vertical" android:padding="16dp">
 
-        <!-- Heritage Image -->
-        <ImageView android:id="@+id/heritageImage" android:layout_width="match_parent" android:layout_height="200dp" android:scaleType="centerCrop" android:contentDescription="@string/heritage_image" android:src="@drawable/placeholder_image" />
+        <!-- Image Slider -->
+        <androidx.viewpager2.widget.ViewPager2
+            android:id="@+id/imageSlider"
+            android:layout_width="match_parent"
+            android:layout_height="220dp"
+            android:layout_marginBottom="12dp" />
 
-        <!-- Heritage Name -->
-        <TextView android:id="@+id/heritageName" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Tên di tích" android:textSize="24sp" android:textStyle="bold" android:layout_marginTop="16dp" />
+        <!-- Indicator (optional) -->
+        <LinearLayout
+            android:id="@+id/sliderIndicator"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="8dp"/>
 
-        <!-- Heritage Location -->
-        <TextView android:id="@+id/heritageLocation" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Vị trí" android:textSize="16sp" android:textColor="@android:color/darker_gray" android:layout_marginTop="8dp" />
+        <!-- Tên di tích -->
+        <TextView
+            android:id="@+id/heritageName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Tên di tích"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:textColor="@color/primary"
+            android:layout_marginTop="8dp" />
 
-        <!-- Heritage Description -->
-        <TextView android:id="@+id/heritageDescription" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Mô tả" android:textSize="16sp" android:layout_marginTop="16dp" />
+        <!-- Vị trí -->
+        <TextView
+            android:id="@+id/heritageLocation"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Vị trí"
+            android:textSize="16sp"
+            android:textColor="@android:color/darker_gray"
+            android:layout_marginTop="4dp" />
 
-        <!-- Heritage Stats -->
-        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginTop="16dp">
+        <!-- Đánh giá, yêu thích, trái tim -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="8dp">
 
-            <TextView android:id="@+id/heritageRating" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Đánh giá: N/A" android:textSize="14sp" />
+            <TextView
+                android:id="@+id/heritageRating"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Đánh giá: N/A"
+                android:textSize="15sp"
+                android:textColor="@color/primary"
+                android:drawableLeft="@drawable/ic_star"
+                android:drawablePadding="4dp"
+                android:paddingEnd="16dp"/>
 
-            <TextView android:id="@+id/heritageFavorites" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Yêu thích: 0" android:textSize="14sp" />
+            <TextView
+                android:id="@+id/heritageFavorites"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Yêu thích: 0"
+                android:textSize="15sp"
+                android:textColor="@color/primary"
+                android:drawableLeft="@drawable/ic_favorite"
+                android:drawablePadding="4dp"
+                android:paddingEnd="16dp"/>
 
+            <ImageButton
+                android:id="@+id/buttonFavorite"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Thêm vào danh sách yêu thích"
+                android:src="@drawable/ic_favorite"
+                android:tint="@color/colorAccent"
+                android:layout_gravity="center_vertical" />
         </LinearLayout>
 
-        <ImageButton android:id="@+id/buttonFavorite" android:layout_width="48dp" android:layout_height="48dp" android:layout_margin="8dp" android:background="?attr/selectableItemBackgroundBorderless" android:contentDescription="Thêm vào danh sách yêu thích" android:src="@drawable/ic_favorite" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintTop_toTopOf="parent" app:tint="@color/colorAccent" />
+        <!-- Tag -->
+        <LinearLayout
+            android:id="@+id/tagContainer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="6dp"
+            android:layout_marginBottom="6dp"/>
+
+        <!-- Mô tả -->
+        <TextView
+            android:id="@+id/heritageDescription"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Mô tả"
+            android:textSize="16sp"
+            android:layout_marginTop="10dp" />
+
+        <!-- Kiến trúc -->
+        <TextView
+            android:id="@+id/architecturalTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Kiến trúc"
+            android:textStyle="bold"
+            android:textColor="@color/primary"
+            android:textSize="16sp"
+            android:layout_marginTop="16dp"
+            android:visibility="gone"/>
+
+        <TextView
+            android:id="@+id/heritageArchitectural"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:textSize="15sp"
+            android:textColor="@android:color/black"
+            android:layout_marginBottom="8dp"
+            android:visibility="gone"/>
+
+        <!-- Lễ hội -->
+        <TextView
+            android:id="@+id/heritageFestival"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Lễ hội: ..."
+            android:layout_marginTop="8dp"
+            android:textColor="@color/primary" />
+
+        <!-- Sự kiện lịch sử -->
+        <TextView
+            android:id="@+id/heritageEventsTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Sự kiện lịch sử"
+            android:textStyle="bold"
+            android:textSize="18sp"
+            android:layout_marginTop="16dp"
+            android:textColor="@color/primary" />
+
+        <LinearLayout
+            android:id="@+id/heritageEventsContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginTop="8dp" />
 
     </LinearLayout>
 </ScrollView>
