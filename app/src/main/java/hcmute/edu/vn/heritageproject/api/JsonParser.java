@@ -22,7 +22,7 @@ public class JsonParser {
         response.setMessage(jsonObject.optString("message", ""));
 
         // Log JSON để debug
-        Log.d(TAG, "Parsing JSON: " + jsonObject.toString());
+        Log.d(TAG, "Parsing JSON: " + jsonObject);
 
         // Parse heritages array based on context
         if (jsonObject.has("heritages")) {
@@ -135,10 +135,10 @@ public class JsonParser {
             JSONObject statsJson = jsonObject.getJSONObject("stats");
             Heritage.Stats stats = new Heritage.Stats();
 
-            stats.setAverageRating(statsJson.optString("averageRating", "0"));
-            stats.setTotalReviews(statsJson.optString("totalReviews", "0"));
-            stats.setTotalVisits(statsJson.optString("totalVisits", "0"));
-            stats.setTotalFavorites(statsJson.optString("totalFavorites", "0"));
+            stats.setAverageRating(statsJson.optDouble("averageRating", 0.0)); // Sử dụng optDouble
+            stats.setTotalReviews(statsJson.optInt("totalReviews", 0));       // Sử dụng optInt
+            stats.setTotalVisits(statsJson.optInt("totalVisits", 0));          // Sử dụng optInt
+            stats.setTotalFavorites(statsJson.optString("totalFavorites", "0")); // Giữ optString
 
             heritage.setStats(stats);
         }
@@ -173,7 +173,7 @@ public class JsonParser {
             Heritage.KnowledgeTestSummary summary = new Heritage.KnowledgeTestSummary();
 
             summary.setTitle(summaryJson.optString("title", ""));
-            summary.setQuestionCount(summaryJson.optString("questionCount", "0"));
+            summary.setQuestionCount(summaryJson.optInt("questionCount", 0)); // Sử dụng optInt
             summary.setDifficulty(summaryJson.optString("difficulty", "Medium"));
 
             heritage.setKnowledgeTestSummary(summary);
@@ -183,8 +183,8 @@ public class JsonParser {
             JSONObject lbJson = jsonObject.getJSONObject("leaderboardSummary");
             Heritage.LeaderboardSummary lbSummary = new Heritage.LeaderboardSummary();
 
-            lbSummary.setTopScore(lbJson.optString("topScore", "0"));
-            lbSummary.setTotalParticipants(lbJson.optString("totalParticipants", "0"));
+            lbSummary.setTopScore(lbJson.optInt("topScore", 0));              // Sử dụng optInt
+            lbSummary.setTotalParticipants(lbJson.optInt("totalParticipants", 0)); // Sử dụng optInt
 
             if (lbJson.has("topUsers")) {
                 JSONArray usersArray = lbJson.getJSONArray("topUsers");

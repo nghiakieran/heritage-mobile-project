@@ -23,6 +23,7 @@ import hcmute.edu.vn.heritageproject.views.adapters.BannerAdapter;
 import hcmute.edu.vn.heritageproject.views.adapters.EventAdapter;
 import hcmute.edu.vn.heritageproject.models.Banner;
 import hcmute.edu.vn.heritageproject.models.CulturalEvent;
+import hcmute.edu.vn.heritageproject.api.models.AppCache;
 
 public class HomeFragment extends Fragment {
 
@@ -85,45 +86,51 @@ public class HomeFragment extends Fragment {
         BannerAdapter bannerAdapter = new BannerAdapter(banners);
         recyclerViewBanners.setAdapter(bannerAdapter);
     }    private void loadFeaturedHeritages() {
-        // Get popular heritages (sorted by totalFavorites)
+        // Dùng cache chung nếu có
+        List<Heritage> cachedHeritages = AppCache.getHeritageList();
+        if (cachedHeritages != null && !cachedHeritages.isEmpty()) {
+            // Lấy top 5 di tích nổi bật (theo totalFavorites)
+            List<Heritage> sorted = new ArrayList<>(cachedHeritages);
+            sorted.sort((h1, h2) -> {
+                int fav1 = 0, fav2 = 0;
+                try { if (h1.getStats() != null && h1.getStats().getTotalFavorites() != null) fav1 = Integer.parseInt(h1.getStats().getTotalFavorites()); } catch (Exception ignored) {}
+                try { if (h2.getStats() != null && h2.getStats().getTotalFavorites() != null) fav2 = Integer.parseInt(h2.getStats().getTotalFavorites()); } catch (Exception ignored) {}
+                return Integer.compare(fav2, fav1);
+            });
+            int count = Math.min(sorted.size(), 5);
+            popularHeritages.clear();
+            popularHeritages.addAll(sorted.subList(0, count));
+            popularHeritageAdapter.notifyDataSetChanged();
+            return;
+        }
+        // Nếu chưa có cache thì gọi API như cũ
         heritageRepository.getPopularHeritages(new HeritageRepository.HeritageCallback() {
             @Override
             public void onHeritagesLoaded(final List<Heritage> heritages) {
-                // Chuyển cập nhật UI về main thread
                 if (getActivity() != null) {
                     getActivity().runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            if (isAdded()) {  // Kiểm tra Fragment còn được đính kèm vào Activity không
+                            if (isAdded()) {
                                 popularHeritages.clear();
                                 popularHeritages.addAll(heritages);
                                 popularHeritageAdapter.notifyDataSetChanged();
-                                
-                                // Set click listener for heritage items
-                                popularHeritageAdapter.setOnHeritageClickListener(new HeritageAdapter.OnHeritageClickListener() {
-                                    @Override
-                                    public void onHeritageClick(Heritage heritage) {
-                                        // Handle heritage item click
-                                        Toast.makeText(getContext(), "Selected: " + heritage.getName(), Toast.LENGTH_SHORT).show();
-                                        // You can navigate to a detail screen here
-                                        // Intent intent = new Intent(getContext(), HeritageDetailActivity.class);
-                                        // intent.putExtra("heritageId", heritage.getId());
-                                        // startActivity(intent);
-                                    }
-                                });
+                                // Cập nhật cache chung nếu chưa có
+                                if (AppCache.getHeritageList() == null || AppCache.getHeritageList().isEmpty()) {
+                                    AppCache.setHeritageList(new ArrayList<>(heritages));
+                                }
                             }
                         }
                     });
                 }
             }
-            
             @Override
             public void onError(final Exception e) {
                 if (getActivity() != null) {
                     getActivity().runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            if (isAdded()) {  // Kiểm tra Fragment còn được đính kèm vào Activity không
+                            if (isAdded()) {
                                 Log.e(TAG, "Failed to load popular heritages", e);
                                 Toast.makeText(getContext(), "Không thể tải di tích nổi bật", Toast.LENGTH_SHORT).show();
                             }
@@ -134,45 +141,59 @@ public class HomeFragment extends Fragment {
         });
     }
     private void loadPopularHeritages() {
-        // Get random heritages
+        // Dùng cache chung nếu có
+        List<Heritage> cachedHeritages = AppCache.getHeritageList();
+        if (cachedHeritages != null && !cachedHeritages.isEmpty()) {
+            // Lấy ngẫu nhiên 5 di tích
+            List<Heritage> shuffled = new ArrayList<>(cachedHeritages);
+            java.util.Collections.shuffle(shuffled, new java.util.Random());
+            int count = Math.min(shuffled.size(), 5);
+            randomHeritages.clear();
+            randomHeritages.addAll(shuffled.subList(0, count));
+            randomHeritageAdapter.notifyDataSetChanged();
+            // Set click listener cho các item
+            randomHeritageAdapter.setOnHeritageClickListener(new HeritageAdapter.OnHeritageClickListener() {
+                @Override
+                public void onHeritageClick(Heritage heritage) {
+                    Toast.makeText(getContext(), "Selected: " + heritage.getName(), Toast.LENGTH_SHORT).show();
+                }
+            });
+            return;
+        }
+        // Nếu chưa có cache thì gọi API như cũ
         heritageRepository.getRandomHeritages(new HeritageRepository.HeritageCallback() {
             @Override
             public void onHeritagesLoaded(final List<Heritage> heritages) {
-                // Chuyển cập nhật UI về main thread
                 if (getActivity() != null) {
                     getActivity().runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            if (isAdded()) {  // Kiểm tra Fragment còn được đính kèm vào Activity không
+                            if (isAdded()) {
                                 randomHeritages.clear();
                                 randomHeritages.addAll(heritages);
                                 randomHeritageAdapter.notifyDataSetChanged();
-                                
-                                // Set click listener for heritage items
                                 randomHeritageAdapter.setOnHeritageClickListener(new HeritageAdapter.OnHeritageClickListener() {
                                     @Override
                                     public void onHeritageClick(Heritage heritage) {
-                                        // Handle heritage item click
                                         Toast.makeText(getContext(), "Selected: " + heritage.getName(), Toast.LENGTH_SHORT).show();
-                                        // You can navigate to a detail screen here
-                                        // Intent intent = new Intent(getContext(), HeritageDetailActivity.class);
-                                        // intent.putExtra("heritageId", heritage.getId());
-                                        // startActivity(intent);
                                     }
                                 });
+                                // Cập nhật cache chung nếu chưa có
+                                if (AppCache.getHeritageList() == null || AppCache.getHeritageList().isEmpty()) {
+                                    AppCache.setHeritageList(new ArrayList<>(heritages));
+                                }
                             }
                         }
                     });
                 }
             }
-            
             @Override
             public void onError(final Exception e) {
                 if (getActivity() != null) {
                     getActivity().runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            if (isAdded()) {  // Kiểm tra Fragment còn được đính kèm vào Activity không
+                            if (isAdded()) {
                                 Log.e(TAG, "Failed to load random heritages", e);
                                 Toast.makeText(getContext(), "Không thể tải di tích phổ biến", Toast.LENGTH_SHORT).show();
                             }

@@ -27,6 +27,7 @@ import java.util.regex.Pattern;
 
 import hcmute.edu.vn.heritageproject.R;
 import hcmute.edu.vn.heritageproject.api.HeritageApiService;
+import hcmute.edu.vn.heritageproject.api.models.AppCache;
 import hcmute.edu.vn.heritageproject.api.models.Heritage;
 import hcmute.edu.vn.heritageproject.api.models.HeritageResponse;
 import hcmute.edu.vn.heritageproject.utils.NetworkUtils;
@@ -65,19 +66,23 @@ public class HeritageFragment extends Fragment {
         progressBar = view.findViewById(R.id.progressBar);
         searchEditText = view.findViewById(R.id.searchEditText);
         emptyContentLayout = view.findViewById(R.id.emptyContentLayout);
-        emptyTextView = view.findViewById(R.id.emptyTextView); // Thêm TextView trong layout nếu chưa có
+        emptyTextView = view.findViewById(R.id.emptyTextView);
 
         recyclerViewHeritages.setLayoutManager(new LinearLayoutManager(getContext()));
         heritageAdapter = new HeritageAdapter(heritageList);
         recyclerViewHeritages.setAdapter(heritageAdapter);
 
         heritageAdapter.setOnHeritageClickListener(heritage -> {
+            Log.d(TAG, "Heritage clicked: Name=" + (heritage.getName() != null ? heritage.getName() : "null") +
+                    ", ID=" + (heritage.getId() != null ? heritage.getId() : "null"));
             if (heritage.getId() == null || heritage.getId().isEmpty()) {
                 Toast.makeText(getContext(), "ID di tích không hợp lệ!", Toast.LENGTH_SHORT).show();
+                Log.e(TAG, "Invalid heritage ID: " + heritage.getId());
                 return;
             }
             Intent intent = new Intent(getContext(), HeritageDetailActivity.class);
             intent.putExtra("heritageId", heritage.getId());
+            Log.d(TAG, "Starting HeritageDetailActivity with heritageId: " + heritage.getId());
             startActivity(intent);
         });
 
@@ -101,6 +106,18 @@ public class HeritageFragment extends Fragment {
     }
 
     private void loadAllHeritages() {
+        List<Heritage> cachedHeritages = AppCache.getHeritageList();
+        if (cachedHeritages != null && !cachedHeritages.isEmpty()) {
+            // Dùng dữ liệu cache chung
+            originalHeritageList.clear();
+            originalHeritageList.addAll(cachedHeritages);
+
+            heritageList.clear();
+            heritageList.addAll(originalHeritageList);
+            heritageAdapter.notifyDataSetChanged();
+            showHeritageList();
+            return;
+        }
         if (!NetworkUtils.isNetworkAvailable(getContext())) {
             showOfflineMessage();
             return;
@@ -123,6 +140,8 @@ public class HeritageFragment extends Fragment {
                         heritageList.addAll(originalHeritageList);
                         heritageAdapter.notifyDataSetChanged();
                         showHeritageList();
+                        // Cập nhật cache chung
+                        AppCache.setHeritageList(new ArrayList<>(result.getHeritages()));
                     } else {
                         showEmptyState("Không có di tích nào.");
                     }

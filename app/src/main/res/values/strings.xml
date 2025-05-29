@@ -18,4 +18,15 @@
     <string name="search_hint">Tìm kiếm vị trí...</string>
     <string name="empty_map_message">Bản đồ di tích sẽ được hiển thị ở đây</string>
     <string name="heritage_image">Hình ảnh di tích</string>
+    <string name="no_heritage_id">Không tìm thấy ID di tích</string>
+    <string name="no_network">Không có kết nối mạng. Vui lòng thử lại.</string>
+    <string name="cannot_load_details">Không thể tải chi tiết di tích</string>
+    <string name="load_error">Lỗi khi tải chi tiết di tích</string>
+    <string name="unknown_name">Tên không xác định</string>
+    <string name="unknown_location">Vị trí không xác định</string>
+    <string name="unknown_description">Mô tả không xác định</string>
+    <string name="rating">Đánh giá: %.1f</string>
+    <string name="favorites">Yêu thích: %s</string>
+    <string name="rating_na">Đánh giá: N/A</string>
+    <string name="favorites_zero">Yêu thích: 0</string>
 </resources>
