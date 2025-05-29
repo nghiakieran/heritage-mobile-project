@@ -1,58 +1,74 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout 
+<androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- Header with Search Bar -->
+    <!-- Header Navigation Bar Heritage Style -->
     <androidx.cardview.widget.CardView
-        android:id="@+id/searchBarCard"
+        android:id="@+id/headerNavBar"
         android:layout_width="0dp"
-        android:layout_height="56dp"
-        android:layout_marginHorizontal="16dp"
-        android:layout_marginTop="16dp"
-        app:cardCornerRadius="28dp"
-        app:cardElevation="4dp"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_height="64dp"
+        android:layout_marginHorizontal="0dp"
+        android:layout_marginTop="0dp"
+        app:cardCornerRadius="0dp"
+        app:cardElevation="8dp"
+        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintEnd_toEndOf="parent"
+        android:background="@color/white">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:gravity="center_vertical"
             android:orientation="horizontal"
+            android:gravity="center_vertical"
             android:paddingHorizontal="16dp">
 
+            <!-- Logo -->
             <ImageView
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:contentDescription="Search icon"
-                android:src="@drawable/ic_search1" />
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:src="@drawable/favicon"
+                android:contentDescription="Logo" />
 
-            <EditText
-                android:id="@+id/searchEditText"
+            <!-- Search Bar -->
+            <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_marginStart="8dp"
                 android:layout_weight="1"
-                android:background="@android:color/transparent"
-                android:hint="Tìm kiếm di tích..."
-                android:imeOptions="actionSearch"
-                android:inputType="text"
-                android:paddingVertical="8dp" />
+                android:gravity="center"
+                android:layout_marginLeft="32dp"
+                android:orientation="horizontal">
+                <EditText
+                    android:id="@+id/searchEditText"
+                    android:layout_width="0dp"
+                    android:layout_height="36dp"
+                    android:layout_weight="1"
+                    android:hint="Tìm kiếm di tích..."
+                    android:paddingHorizontal="16dp"
+                    android:paddingVertical="0dp"
+                    android:textColor="@color/primary"
+                    android:textSize="14sp"
+                    android:fontFamily="sans-serif"
+                    android:singleLine="true"
+                    android:imeOptions="actionSearch" />
+                <ImageView
+                    android:id="@+id/searchButton"
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:src="@drawable/ic_search1"
+                    android:contentDescription="Tìm kiếm"
+                    android:layout_marginStart="4dp"
+                    app:tint="@color/primary" />
+            </LinearLayout>
 
-            <ImageView
-                android:id="@+id/filterButton"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:layout_marginStart="8dp"
-                android:contentDescription="Filter"
-                android:src="@drawable/ic_filter" />
         </LinearLayout>
-    </androidx.cardview.widget.CardView>    <!-- Loading Indicator -->
+    </androidx.cardview.widget.CardView>
+
+    <!-- Loading Indicator -->
     <ProgressBar
         android:id="@+id/loadingProgressBar"
         android:layout_width="wrap_content"
@@ -62,7 +78,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
-        
+
     <!-- Content ScrollView -->
     <androidx.core.widget.NestedScrollView
         android:id="@+id/scrollContent"
@@ -70,8 +86,8 @@
         android:layout_height="0dp"
         android:fillViewport="true"
         android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/searchBarCard">
+        app:layout_constraintTop_toBottomOf="@id/headerNavBar"
+        app:layout_constraintBottom_toBottomOf="parent">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -79,12 +95,12 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <!-- Carousel Section (moved inside scroll) -->
+            <!-- Carousel Section -->
             <androidx.viewpager2.widget.ViewPager2
                 android:id="@+id/heroCarousel"
                 android:layout_width="match_parent"
                 android:layout_height="200dp"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="5dp"
                 android:clipToPadding="false"
                 android:paddingHorizontal="0dp"
                 android:visibility="visible" />
@@ -108,11 +124,32 @@
                 android:orientation="horizontal"
                 android:paddingEnd="16dp" />
 
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Hoàng Sa Trường Sa là của Việt Nam!!"
+                android:textColor="@color/primary"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+            <!-- GIF Section -->
+            <ImageView
+                android:id="@+id/gifImageView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="16dp"
+                android:contentDescription="Heritage Animation"
+                android:src="@drawable/video" />
+
             <!-- Popular Monuments Section -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
+                android:labelFor="@id/recyclerViewPopularMonuments"
+                android:layout_marginTop="8dp"
                 android:text="Di tích phổ biến"
                 android:textColor="@color/primary"
                 android:textSize="18sp"
@@ -145,8 +182,130 @@
                 android:clipToPadding="false"
                 android:orientation="horizontal"
                 android:paddingEnd="16dp"
-                android:paddingBottom="70dp" />
-                
+                android:paddingBottom="16dp" />
+
+            <!-- Footer -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/footer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                app:cardCornerRadius="0dp"
+                app:cardElevation="8dp"
+                android:background="@color/white">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="32dp">
+
+                    <!-- Footer Header -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:gravity="center_horizontal">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Heritage Reborn"
+                            android:textColor="@color/primary"
+                            android:textSize="20sp"
+                            android:textStyle="bold" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Khám phá kỳ quan văn hóa"
+                            android:textColor="@color/secondary"
+                            android:textSize="14sp" />
+                    </LinearLayout>
+
+                    <!-- Social Media Links -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center"
+                        android:layout_marginTop="8dp">
+                        <ImageView
+                            android:id="@+id/facebook_icon"
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/ic_facebook"
+                            android:contentDescription="Facebook"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:layout_marginEnd="8dp" />
+                        <ImageView
+                            android:id="@+id/instagram_icon"
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/ic_instagram"
+                            android:contentDescription="Instagram"
+                            android:clickable="true"
+                            android:focusable="true" />
+                    </LinearLayout>
+
+                    <!-- Navigation Links -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center"
+                        android:layout_marginTop="8dp">
+                        <TextView
+                            android:id="@+id/nav_heritage"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Di tích lịch sử"
+                            android:textColor="@color/secondary"
+                            android:textSize="14sp"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:layout_marginEnd="12dp" />
+                        <TextView
+                            android:id="@+id/nav_explore"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Khám phá"
+                            android:textColor="@color/secondary"
+                            android:textSize="14sp"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:layout_marginEnd="12dp" />
+                        <TextView
+                            android:id="@+id/nav_about"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Giới thiệu"
+                            android:textColor="@color/secondary"
+                            android:textSize="14sp"
+                            android:clickable="true"
+                            android:focusable="true" />
+                    </LinearLayout>
+
+                    <!-- Contact Email -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center"
+                        android:layout_marginTop="8dp">
+                        <TextView
+                            android:id="@+id/email_text"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="lechinghia202@gmail.com"
+                            android:textColor="@color/secondary"
+                            android:textSize="14sp"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:layout_marginStart="4dp" />
+                    </LinearLayout>
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
