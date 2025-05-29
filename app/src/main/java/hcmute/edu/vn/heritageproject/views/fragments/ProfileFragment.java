@@ -13,8 +13,11 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.bumptech.glide.Glide;
+import com.google.android.material.card.MaterialCardView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
@@ -24,6 +27,7 @@ import hcmute.edu.vn.heritageproject.models.User;
 import hcmute.edu.vn.heritageproject.services.UserService;
 import hcmute.edu.vn.heritageproject.views.EditProfileActivity;
 import hcmute.edu.vn.heritageproject.views.LoginActivity;
+import hcmute.edu.vn.heritageproject.views.FavoritesActivity;
 
 public class ProfileFragment extends Fragment {
 
@@ -115,6 +119,13 @@ public class ProfileFragment extends Fragment {
         });
 
         binding.signOutButton.setOnClickListener(v -> signOut());
+
+        // Thêm click listener cho card danh sách yêu thích
+        MaterialCardView favoritesCard = binding.getRoot().findViewById(R.id.favoritesCard);
+        favoritesCard.setOnClickListener(v -> {
+            Intent intent = new Intent(getActivity(), FavoritesActivity.class);
+            startActivity(intent);
+        });
     }
 
     private void signOut() {

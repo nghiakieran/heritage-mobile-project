@@ -22,6 +22,7 @@
         <!-- Thêm khai báo cho HeritageDetailActivity -->
         <activity android:name=".views.HeritageDetailActivity" android:exported="false" />
         <activity android:name=".views.EditProfileActivity" android:exported="false" />
+        <activity android:name=".views.FavoritesActivity" android:exported="false" android:label="Danh sách yêu thích" android:parentActivityName=".views.MainActivity" />
         <meta-data android:name="com.google.android.gms.version" android:value="@integer/google_play_services_version" />
 
         <meta-data android:name="com.google.android.api.key" android:value="AIzaSyARrkvpVCm0ugSp_amklEgiPqViReNVVj4" />
