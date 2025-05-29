@@ -51,6 +51,7 @@ dependencies {
     annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")
     implementation("com.airbnb.android:lottie:6.3.0")
     implementation("com.google.android.material:material:1.11.0")
+    implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
 
     
     // OkHttp cho API calls

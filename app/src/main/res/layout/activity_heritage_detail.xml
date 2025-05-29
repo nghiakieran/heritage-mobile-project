@@ -1,77 +1,30 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:fillViewport="true">
+    xmlns:app="http://schemas.android.com/apk/res-auto" android:layout_width="match_parent" android:layout_height="match_parent" android:fillViewport="true">
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="16dp">
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="16dp">
 
         <!-- Heritage Image -->
-        <ImageView
-            android:id="@+id/heritageImage"
-            android:layout_width="match_parent"
-            android:layout_height="200dp"
-            android:scaleType="centerCrop"
-            android:contentDescription="@string/heritage_image"
-            android:src="@drawable/placeholder_image" />
+        <ImageView android:id="@+id/heritageImage" android:layout_width="match_parent" android:layout_height="200dp" android:scaleType="centerCrop" android:contentDescription="@string/heritage_image" android:src="@drawable/placeholder_image" />
 
         <!-- Heritage Name -->
-        <TextView
-            android:id="@+id/heritageName"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Tên di tích"
-            android:textSize="24sp"
-            android:textStyle="bold"
-            android:layout_marginTop="16dp" />
+        <TextView android:id="@+id/heritageName" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Tên di tích" android:textSize="24sp" android:textStyle="bold" android:layout_marginTop="16dp" />
 
         <!-- Heritage Location -->
-        <TextView
-            android:id="@+id/heritageLocation"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Vị trí"
-            android:textSize="16sp"
-            android:textColor="@android:color/darker_gray"
-            android:layout_marginTop="8dp" />
+        <TextView android:id="@+id/heritageLocation" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Vị trí" android:textSize="16sp" android:textColor="@android:color/darker_gray" android:layout_marginTop="8dp" />
 
         <!-- Heritage Description -->
-        <TextView
-            android:id="@+id/heritageDescription"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Mô tả"
-            android:textSize="16sp"
-            android:layout_marginTop="16dp" />
+        <TextView android:id="@+id/heritageDescription" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Mô tả" android:textSize="16sp" android:layout_marginTop="16dp" />
 
         <!-- Heritage Stats -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginTop="16dp">
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginTop="16dp">
 
-            <TextView
-                android:id="@+id/heritageRating"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Đánh giá: N/A"
-                android:textSize="14sp" />
+            <TextView android:id="@+id/heritageRating" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Đánh giá: N/A" android:textSize="14sp" />
 
-            <TextView
-                android:id="@+id/heritageFavorites"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Yêu thích: 0"
-                android:textSize="14sp" />
+            <TextView android:id="@+id/heritageFavorites" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Yêu thích: 0" android:textSize="14sp" />
 
         </LinearLayout>
+
+        <ImageButton android:id="@+id/buttonFavorite" android:layout_width="48dp" android:layout_height="48dp" android:layout_margin="8dp" android:background="?attr/selectableItemBackgroundBorderless" android:contentDescription="Thêm vào danh sách yêu thích" android:src="@drawable/ic_favorite" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintTop_toTopOf="parent" app:tint="@color/colorAccent" />
 
     </LinearLayout>
 </ScrollView>

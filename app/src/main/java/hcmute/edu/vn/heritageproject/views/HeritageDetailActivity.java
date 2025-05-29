@@ -5,6 +5,7 @@ import android.util.Log;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ImageButton;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -18,6 +19,8 @@ import hcmute.edu.vn.heritageproject.api.HeritageApiService;
 import hcmute.edu.vn.heritageproject.api.models.Heritage;
 import hcmute.edu.vn.heritageproject.api.models.HeritageResponse;
 import hcmute.edu.vn.heritageproject.utils.NetworkUtils;
+import hcmute.edu.vn.heritageproject.services.FavoritesService;
+import hcmute.edu.vn.heritageproject.models.Favorites;
 
 public class HeritageDetailActivity extends AppCompatActivity {
 
@@ -28,6 +31,9 @@ public class HeritageDetailActivity extends AppCompatActivity {
     private TextView heritageDescription;
     private TextView heritageRating;
     private TextView heritageFavorites;
+    private ImageButton buttonFavorite;
+    private FavoritesService favoritesService;
+    private boolean isFavorite = false;
     private HeritageApiService apiService;
 
     @Override
@@ -42,26 +48,27 @@ public class HeritageDetailActivity extends AppCompatActivity {
         heritageDescription = findViewById(R.id.heritageDescription);
         heritageRating = findViewById(R.id.heritageRating);
         heritageFavorites = findViewById(R.id.heritageFavorites);
+        buttonFavorite = findViewById(R.id.buttonFavorite);
+        favoritesService = FavoritesService.getInstance();
+
+        // Setup favorite button
+        buttonFavorite.setOnClickListener(v -> toggleFavorite());
 
         // Initialize API service
         apiService = HeritageApiService.getInstance();
 
-        // Get heritage ID from intent
-        String heritageId = getIntent().getStringExtra("heritageId");
-        if (heritageId == null) {
-            Toast.makeText(this, "Không tìm thấy ID di tích", Toast.LENGTH_SHORT).show();
-            finish();
-            return;
-        }
-
         // Load heritage details
-        if (NetworkUtils.isNetworkAvailable(this)) {
+        String heritageId = getIntent().getStringExtra("heritageId");
+        if (heritageId != null) {
             loadHeritageDetails(heritageId);
+            checkFavoriteStatus(heritageId);
         } else {
-            Toast.makeText(this, "Không có kết nối mạng. Vui lòng thử lại.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Không tìm thấy thông tin di tích", Toast.LENGTH_SHORT).show();
             finish();
         }
-    }    private void loadHeritageDetails(String heritageId) {
+    }
+
+    private void loadHeritageDetails(String heritageId) {
         apiService.getHeritageById(heritageId, new HeritageApiService.ApiCallback<HeritageResponse>() {
             @Override
             public void onSuccess(HeritageResponse result) {
@@ -75,7 +82,7 @@ public class HeritageDetailActivity extends AppCompatActivity {
                             } else {
                                 Log.e(TAG, "Loaded heritage has empty ID");
                                 Toast.makeText(HeritageDetailActivity.this,
-                                        "Chi tiết di tích không hợp lệ: Thiếu ID", 
+                                        "Chi tiết di tích không hợp lệ: Thiếu ID",
                                         Toast.LENGTH_SHORT).show();
                                 finish();
                             }
@@ -107,9 +114,11 @@ public class HeritageDetailActivity extends AppCompatActivity {
                 });
             }
         });
-    }    private void displayHeritageDetails(Heritage heritage) {
+    }
+
+    private void displayHeritageDetails(Heritage heritage) {
         Log.d(TAG, "Displaying heritage details - Name: " + heritage.getName() + ", ID: " + heritage.getId());
-        
+
         // Set heritage name
         heritageName.setText(heritage.getName());
 
@@ -141,5 +150,67 @@ public class HeritageDetailActivity extends AppCompatActivity {
             heritageRating.setText("Đánh giá: N/A");
             heritageFavorites.setText("Yêu thích: 0");
         }
+    }
+
+    private void checkFavoriteStatus(String heritageId) {
+        favoritesService.getCurrentUserFavorites(new FavoritesService.FavoritesServiceCallback() {
+            @Override
+            public void onSuccess(Favorites favorites) {
+                if (favorites != null && favorites.getItems() != null) {
+                    isFavorite = favorites.getItems().stream()
+                            .anyMatch(item -> item.getHeritageId().equals(heritageId));
+                    updateFavoriteButtonState();
+                }
+            }
+
+            @Override
+            public void onError(String error) {
+                // Ignore error for now
+            }
+        });
+    }
+
+    private void toggleFavorite() {
+        String heritageId = getIntent().getStringExtra("heritageId");
+        if (heritageId == null)
+            return;
+
+        if (isFavorite) {
+            favoritesService.removeHeritageFromFavorites(heritageId, new FavoritesService.FavoritesServiceCallback() {
+                @Override
+                public void onSuccess(Favorites favorites) {
+                    isFavorite = false;
+                    updateFavoriteButtonState();
+                    Toast.makeText(HeritageDetailActivity.this,
+                            "Đã xóa khỏi danh sách yêu thích", Toast.LENGTH_SHORT).show();
+                }
+
+                @Override
+                public void onError(String error) {
+                    Toast.makeText(HeritageDetailActivity.this, error, Toast.LENGTH_SHORT).show();
+                }
+            });
+        } else {
+            favoritesService.addHeritageToFavorites(heritageId, new FavoritesService.FavoritesServiceCallback() {
+                @Override
+                public void onSuccess(Favorites favorites) {
+                    isFavorite = true;
+                    updateFavoriteButtonState();
+                    Toast.makeText(HeritageDetailActivity.this,
+                            "Đã thêm vào danh sách yêu thích", Toast.LENGTH_SHORT).show();
+                }
+
+                @Override
+                public void onError(String error) {
+                    Toast.makeText(HeritageDetailActivity.this, error, Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+    }
+
+    private void updateFavoriteButtonState() {
+        buttonFavorite.setImageResource(isFavorite ? R.drawable.ic_favorite : R.drawable.ic_favorite_border);
+        buttonFavorite
+                .setContentDescription(isFavorite ? "Xóa khỏi danh sách yêu thích" : "Thêm vào danh sách yêu thích");
     }
 }
