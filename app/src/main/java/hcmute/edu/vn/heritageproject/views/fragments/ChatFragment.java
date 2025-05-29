@@ -50,7 +50,8 @@ public class ChatFragment extends Fragment {
                             Bundle savedInstanceState) {
         // Inflate layout for this fragment
         return inflater.inflate(R.layout.fragment_chat, container, false);
-    }    @Override
+    }    
+    @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
@@ -177,7 +178,8 @@ public class ChatFragment extends Fragment {
         }
         
         return count;
-    }    private void showTypingIndicator() {
+    }
+    private void showTypingIndicator() {
         if (getActivity() == null) return;
         
         getActivity().runOnUiThread(() -> {
@@ -192,7 +194,7 @@ public class ChatFragment extends Fragment {
             typingIndicator.setTextColor(0xFF757575); // Màu chữ xám
             typingIndicator.setBackgroundResource(R.drawable.bot_message_background);
             
-            // Thiết lập animation hiệu ứng nhấp nháy (có thể thêm sau)
+
             
             // Thiết lập layout params cho container
             LinearLayout.LayoutParams containerParams = new LinearLayout.LayoutParams(

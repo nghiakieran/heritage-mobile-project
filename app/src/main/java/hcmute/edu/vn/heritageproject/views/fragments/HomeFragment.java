@@ -7,8 +7,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
+import android.content.Context;
 import android.widget.EditText;
-import android.widget.ImageView; // Import ImageView
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
@@ -77,11 +79,13 @@ public class HomeFragment extends Fragment {
         // Initialize loading indicator and content view
         loadingProgressBar = view.findViewById(R.id.loadingProgressBar);
         scrollContent = view.findViewById(R.id.scrollContent);
-        showLoading(true);
-
-        // Initialize search EditText
+        showLoading(true);        // Initialize search EditText and Button
         searchEditText = view.findViewById(R.id.searchEditText);
+        ImageView searchButton = view.findViewById(R.id.searchButton);
         setupSearchFunctionality();
+        
+        // Thêm sự kiện cho nút tìm kiếm
+        searchButton.setOnClickListener(v -> performSearch());
 
         // Setup banner recycler view (for featured heritages - most popular by totalFavorites)
         recyclerViewBanners = view.findViewById(R.id.recyclerViewBanners);
@@ -299,9 +303,7 @@ public class HomeFragment extends Fragment {
                 showLoading(false);
             }
         }
-    }
-
-    private void setupSearchFunctionality() {
+    }    private void setupSearchFunctionality() {
         // Xử lý khi người dùng nhấn nút tìm kiếm trên bàn phím
         searchEditText.setOnEditorActionListener((v, actionId, event) -> {
             if (actionId == EditorInfo.IME_ACTION_SEARCH) {
@@ -311,11 +313,27 @@ public class HomeFragment extends Fragment {
             return false;
         });
     }
-
+    
     private void performSearch() {
         String searchQuery = searchEditText.getText().toString().trim();
         if (!searchQuery.isEmpty()) {
+            
+            // Ẩn bàn phím
+            hideSoftKeyboard();
+            
+            // Chuyển sang HeritageFragment với từ khóa tìm kiếm
             navigateToHeritageFragmentWithSearch(searchQuery);
+        } else {
+            // Hiển thị thông báo nếu người dùng chưa nhập từ khóa
+            Toast.makeText(getContext(), "Vui lòng nhập từ khóa tìm kiếm", Toast.LENGTH_SHORT).show();
+        }
+    }
+    
+    private void hideSoftKeyboard() {
+        if (getActivity() != null && getActivity().getCurrentFocus() != null) {
+            InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(getActivity().getCurrentFocus().getWindowToken(), 0);
+            searchEditText.clearFocus();
         }
     }
 
